@@ -10,7 +10,7 @@ const router = useRouter();
 const auth = useAuthStore();
 
 const form = reactive({
-  phone: "+998",
+  phone: "",
   password: "",
 });
 const loading = ref(false);
