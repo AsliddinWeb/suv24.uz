@@ -1,0 +1,129 @@
+from typing import Annotated
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+
+from app.core.deps import CurrentUser, DbDep, require_roles
+from app.models.user import User, UserRole
+from app.schemas.common import OkResponse
+from app.schemas.product import PriceCreate, PriceOut, ProductCreate, ProductOut, ProductUpdate
+from app.services.product import ProductService
+
+router = APIRouter(prefix="/products", tags=["products"])
+
+AdminUser = Annotated[
+    User,
+    Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)),
+]
+
+
+async def _to_out(service: ProductService, product) -> ProductOut:
+    price = await service.current_price(product)
+    return ProductOut(
+        id=product.id,
+        company_id=product.company_id,
+        name=product.name,
+        volume_liters=product.volume_liters,
+        is_returnable=product.is_returnable,
+        is_active=product.is_active,
+        current_price=price,
+    )
+
+
+@router.get("", response_model=list[ProductOut])
+async def list_products(
+    user: CurrentUser,
+    db: DbDep,
+    only_active: bool = Query(default=False),
+) -> list[ProductOut]:
+    service = ProductService(db)
+    items = await service.products.list_all(user.company_id, only_active=only_active)
+    return [await _to_out(service, p) for p in items]
+
+
+@router.get("/{product_id}", response_model=ProductOut)
+async def get_product(product_id: UUID, user: CurrentUser, db: DbDep) -> ProductOut:
+    service = ProductService(db)
+    product = await service.products.get(user.company_id, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return await _to_out(service, product)
+
+
+@router.post("", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
+async def create_product(
+    payload: ProductCreate,
+    user: AdminUser,
+    db: DbDep,
+) -> ProductOut:
+    service = ProductService(db)
+    product = await service.create_product(user.company_id, payload)
+    await db.commit()
+    await db.refresh(product)
+    return await _to_out(service, product)
+
+
+@router.patch("/{product_id}", response_model=ProductOut)
+async def update_product(
+    product_id: UUID,
+    payload: ProductUpdate,
+    user: AdminUser,
+    db: DbDep,
+) -> ProductOut:
+    service = ProductService(db)
+    product = await service.products.get(user.company_id, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    product = await service.update_product(product, payload)
+    await db.commit()
+    return await _to_out(service, product)
+
+
+@router.delete("/{product_id}", response_model=OkResponse)
+async def delete_product(
+    product_id: UUID,
+    user: AdminUser,
+    db: DbDep,
+) -> OkResponse:
+    service = ProductService(db)
+    product = await service.products.get(user.company_id, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    await service.products.delete(product)
+    await db.commit()
+    return OkResponse()
+
+
+@router.get("/{product_id}/prices", response_model=list[PriceOut])
+async def list_prices(
+    product_id: UUID,
+    user: CurrentUser,
+    db: DbDep,
+) -> list[PriceOut]:
+    service = ProductService(db)
+    product = await service.products.get(user.company_id, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    history = await service.prices.list_history(product.id)
+    return [PriceOut.model_validate(p) for p in history]
+
+
+@router.post(
+    "/{product_id}/prices",
+    response_model=PriceOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def set_price(
+    product_id: UUID,
+    payload: PriceCreate,
+    user: AdminUser,
+    db: DbDep,
+) -> PriceOut:
+    service = ProductService(db)
+    product = await service.products.get(user.company_id, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    price = await service.set_price(product, payload.price)
+    await db.commit()
+    await db.refresh(price)
+    return PriceOut.model_validate(price)

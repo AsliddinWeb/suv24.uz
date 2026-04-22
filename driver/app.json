@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Suv24 Haydovchi",
+    "slug": "buloq-driver",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "buloqdriver",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#2563eb",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "uz.buloq.driver"
+    },
+    "android": {
+      "package": "uz.buloq.driver"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}

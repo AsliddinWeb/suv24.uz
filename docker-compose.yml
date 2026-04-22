@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: wdms_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wdms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wdms_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-wdms}
+      TZ: Asia/Tashkent
+      PGTZ: Asia/Tashkent
+    ports:
+      - "8018:5432"
+    volumes:
+      - wdms_postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/postgres-init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wdms} -d ${POSTGRES_DB:-wdms}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: wdms_redis
+    restart: unless-stopped
+    ports:
+      - "8019:6379"
+    volumes:
+      - wdms_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wdms_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      TZ: Asia/Tashkent
+    ports:
+      - "8017:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+volumes:
+  wdms_postgres_data:
+  wdms_redis_data:

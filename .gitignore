@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtualenv
+.venv/
+venv/
+env/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.docker/
+
+# Alembic runtime
+backend/alembic/versions/__pycache__/
+
+# Uploads / media
+backend/media/
+backend/uploads/
+
+# Expo / RN
+driver/.expo/
+driver/node_modules/
+driver/web-build/
+driver/dist/
+
+# Admin Vue
+admin/node_modules/
+admin/dist/
+
+# PWA
+pwa/node_modules/
+pwa/dist/
+
+# Logs
+logs/
+*.log
