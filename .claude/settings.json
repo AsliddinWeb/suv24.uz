@@ -115,7 +115,8 @@
       "Bash(curl -sI --max-time 8 --resolve suv24.uz:80:164.92.240.184 http://suv24.uz)",
       "Bash(curl -s --max-time 8 --resolve suv24.uz:80:164.92.240.184 http://suv24.uz/api/v1/health)",
       "Bash(curl -s -X POST http://localhost:8017/api/v1/leads -H \"Content-Type: application/json\" -d '{\"full_name\":\"Test Mijoz\",\"phone\":\"+998901112233\",\"company_name\":\"Test Biznes\"}')",
-      "Bash(git commit -m 'chore: clear +998 prefill from login forms \\(admin + driver\\) *)"
+      "Bash(git commit -m 'chore: clear +998 prefill from login forms \\(admin + driver\\) *)",
+      "Bash(git commit -m 'fix\\(deploy\\): backend now binds 0.0.0.0 in prod \\(was 127.0.0.1\\) *)"
     ],
     "additionalDirectories": [
       "/Users/a1234/Desktop/Live/water_delivery/admin/public"

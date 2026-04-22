@@ -26,14 +26,10 @@ services:
     # No dev bind-mount — use image contents. Media persisted on named volume.
     volumes: !override
       - wdms_media:/app/media
-    command: >
-      sh -c "alembic upgrade head &&
-             uvicorn app.main:app
-                 --host 0.0.0.0
-                 --port 8000
-                 --workers ${UVICORN_WORKERS:-3}
-                 --proxy-headers
-                 --forwarded-allow-ips=*"
+    command:
+      - sh
+      - -c
+      - alembic upgrade head && exec uvicorn app.main:app --host=0.0.0.0 --port=8000 --workers=${UVICORN_WORKERS:-3} --proxy-headers --forwarded-allow-ips=*
 
   admin:
     build:
