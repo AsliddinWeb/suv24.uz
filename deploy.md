@@ -152,7 +152,10 @@ curl -s http://127.0.0.1:8017/health
 # {"status":"ok"}
 ```
 
-## 7. Nginx config
+## 7. Nginx config + SSL
+
+Config'da faqat HTTP (port 80) bor — certbot ishga tushgach, SSL direktivalarini
+(listen 443, ssl_certificate, HTTP→HTTPS redirect) avtomat qo'shadi.
 
 ```bash
 # Config nusxasini nginx'ga o'rnatish
@@ -164,61 +167,29 @@ sudo cp /srv/suv24/nginx/suv24.uz.conf /etc/nginx/sites-available/suv24.uz.conf
 # Enable
 sudo ln -s /etc/nginx/sites-available/suv24.uz.conf /etc/nginx/sites-enabled/
 
-# Certbot uchun vaqtincha katalog
-sudo mkdir -p /var/www/certbot
-sudo chown www-data:www-data /var/www/certbot
-
-# Sintaksis tekshir
+# Sintaksis tekshir va reload
 sudo nginx -t
+sudo systemctl reload nginx
 ```
 
-**Muhim:** config'da allaqachon SSL direktivalari bor, lekin certbot SSL sertifikatlarini
-hali yaratmagan. Shuning uchun nginx'ni **hozircha ishga tushirmang**. Quyidagi 2 ta
-varianddan birini tanlang:
-
-**A) Certbot "webroot" usuli (tavsiya etiladi, downtime yo'q):**
-
-Config'dagi 443-portli server bloklarini vaqtincha izohlang, yoki tezroq yo'l — quyidagi
-minimal HTTP konfig bilan almashtiring:
-
-```bash
-sudo tee /etc/nginx/sites-available/suv24.uz.conf > /dev/null <<'NGINX'
-server {
-    listen 80;
-    listen [::]:80;
-    server_name suv24.uz www.suv24.uz;
-    location /.well-known/acme-challenge/ { root /var/www/certbot; }
-    location / { return 200 'OK'; add_header Content-Type text/plain; }
-}
-NGINX
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-Sertifikatni olish:
-
-```bash
-sudo certbot certonly --webroot -w /var/www/certbot \
-  -d suv24.uz -d www.suv24.uz \
-  --agree-tos --email YOUR@EMAIL.UZ --no-eff-email
-```
-
-Sertifikat olingach — to'liq config'ni qaytaring:
-
-```bash
-sudo cp /srv/suv24/nginx/suv24.uz.conf /etc/nginx/sites-available/suv24.uz.conf
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-**B) Certbot nginx plugini (tezroq lekin downtime bo'lishi mumkin):**
-
-To'liq config'ni qo'yib, keyin:
+Endi http://suv24.uz ochilishi kerak. Keyin SSL:
 
 ```bash
 sudo certbot --nginx -d suv24.uz -d www.suv24.uz \
-  --agree-tos --email YOUR@EMAIL.UZ --no-eff-email
+  --agree-tos --email YOUR@EMAIL.UZ --no-eff-email --redirect
 ```
 
-Certbot config'ni avtomat o'zgartiradi va SSL qo'shadi.
+Certbot avtomatik qiladi:
+- Let's Encrypt sertifikatini oladi
+- Config'ga `listen 443 ssl`, `ssl_certificate`, `ssl_certificate_key` qo'shadi
+- HTTP (80) → HTTPS (443) redirect qo'shadi
+- Nginx'ni reload qiladi
+
+Natijani ko'rish:
+
+```bash
+sudo cat /etc/nginx/sites-available/suv24.uz.conf
+```
 
 ## 8. Tekshirish
 

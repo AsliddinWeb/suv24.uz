@@ -96,7 +96,8 @@
       "Bash(awk '/^en0:|^en1:/{iface=$1} iface && /inet / && !/127\\\\.0\\\\.0\\\\.1/{print iface, $2; iface=\"\"}')",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git commit -m 'chore\\(deploy\\): simpler nginx config, let certbot --nginx add SSL automatically *)"
     ],
     "additionalDirectories": [
       "/Users/a1234/Desktop/Live/water_delivery/admin/public"
