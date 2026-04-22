@@ -19,8 +19,9 @@ services:
 
   backend:
     restart: always
-    # Bind ONLY to localhost. If 8017 is taken by another project, set BACKEND_HOST_PORT.
-    ports:
+    # Replace (not merge) the dev ports list — otherwise dev 0.0.0.0:8017 would leak
+    # into production and expose the backend publicly bypassing nginx.
+    ports: !override
       - "127.0.0.1:${BACKEND_HOST_PORT:-8017}:8000"
     # No dev bind-mount — use image contents. Media persisted on named volume.
     volumes: !override
