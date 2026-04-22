@@ -212,8 +212,8 @@ onMounted(() => {
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
           </div>
           <div>
-            <p class="font-bold text-amber-900">Payme + Click</p>
-            <p class="text-xs text-amber-700 mt-0.5">onlayn to'lov</p>
+            <p class="font-bold text-amber-900">Naqd + karta</p>
+            <p class="text-xs text-amber-700 mt-0.5">Payme yaqinda</p>
           </div>
         </div>
         <div class="flex items-start gap-3 rounded-2xl p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-100">
@@ -221,8 +221,8 @@ onMounted(() => {
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75" /></svg>
           </div>
           <div>
-            <p class="font-bold text-rose-900">24/7 yordam</p>
-            <p class="text-xs text-rose-700 mt-0.5">Telegram'da</p>
+            <p class="font-bold text-rose-900">Tez yordam</p>
+            <p class="text-xs text-rose-700 mt-0.5">Telefon orqali</p>
           </div>
         </div>
       </div>
@@ -258,7 +258,7 @@ onMounted(() => {
             <h3 class="text-xl font-bold text-emerald-900 mt-2">Zamonaviy tizim</h3>
             <ul class="mt-6 space-y-3 text-sm text-slate-700">
               <li class="flex items-start gap-3"><span class="text-emerald-600 text-lg">✓</span> Har buyurtma tizimda — yo'qolmaydi</li>
-              <li class="flex items-start gap-3"><span class="text-emerald-600 text-lg">✓</span> Telefonda manzil + GPS navigatsiya</li>
+              <li class="flex items-start gap-3"><span class="text-emerald-600 text-lg">✓</span> Telefonda manzil + Yandex marshrut</li>
               <li class="flex items-start gap-3"><span class="text-emerald-600 text-lg">✓</span> Har mijoz qarzi real vaqtda</li>
               <li class="flex items-start gap-3"><span class="text-emerald-600 text-lg">✓</span> Naqd pul ilovaga yoziladi — audit log</li>
               <li class="flex items-start gap-3"><span class="text-emerald-600 text-lg">✓</span> Idish balansi har kuni reconcile</li>
@@ -303,23 +303,23 @@ onMounted(() => {
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25" /></svg>
             </div>
             <h3 class="mt-4 text-lg font-bold text-amber-950">Haydovchi ilovasi</h3>
-            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Android + iOS. 4 katta tugma. Offline ham ishlaydi.</p>
+            <p class="mt-2 text-sm text-slate-700 leading-relaxed">iOS + Android. Swipe-to-confirm, tungi/kunduzgi rejim, haptik.</p>
           </div>
 
           <div class="rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-100 p-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/30 group-hover:scale-110 transition-transform">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z" /></svg>
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-rose-950">QR buyurtma</h3>
-            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Stiker yopishtiring — mijoz 15 soniyada buyurtma beradi.</p>
+            <h3 class="mt-4 text-lg font-bold text-rose-950">Yandex marshrut</h3>
+            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Mijoz manzili lat/lng bilan — bitta bosishda xaritada yo'nalish.</p>
           </div>
 
           <div class="rounded-2xl bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-100 p-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white shadow-lg shadow-sky-500/30 group-hover:scale-110 transition-transform">
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3" /></svg>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-sky-950">Payme + Click</h3>
-            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Mijoz onlayn to'laydi, tizim avtomatik yozadi.</p>
+            <h3 class="mt-4 text-lg font-bold text-sky-950">To'lovlar va qarzlar</h3>
+            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Naqd + karta + qaytarish. Mijoz qarzi jonli. Payme yaqinda.</p>
           </div>
 
           <div class="rounded-2xl bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-100 p-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
@@ -327,31 +327,31 @@ onMounted(() => {
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12" /></svg>
             </div>
             <h3 class="mt-4 text-lg font-bold text-purple-950">Idish nazorati</h3>
-            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Kim qancha idish oldi va qaytardi — aniq reconcile.</p>
+            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Haydovchi va mijoz idish balansi har yetkazishda avtomat hisoblanadi.</p>
           </div>
 
           <div class="rounded-2xl bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-100 p-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30 group-hover:scale-110 transition-transform">
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.306a11.95 11.95 0 015.814-5.518l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" /></svg>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-teal-950">Hisobot va chart</h3>
-            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Tushum, LTV, KPI — chiroyli grafik + Excel eksport.</p>
+            <h3 class="mt-4 text-lg font-bold text-teal-950">Dashboard va hisobotlar</h3>
+            <p class="mt-2 text-sm text-slate-700 leading-relaxed">7-kunlik tushum grafigi, status donut, KPI. Bir ekranda biznes holati.</p>
           </div>
 
           <div class="rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 p-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741" /></svg>
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-indigo-950">Telegram + SMS</h3>
-            <p class="mt-2 text-sm text-slate-700 leading-relaxed">"Bugun 16:00 da yetkazamiz" — mijozga avtomatik.</p>
+            <h3 class="mt-4 text-lg font-bold text-indigo-950">Audit va tarix</h3>
+            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Har buyurtma status tarixi: kim qachon nima qildi — hech narsa yo'qolmaydi.</p>
           </div>
 
           <div class="rounded-2xl bg-gradient-to-br from-fuchsia-50 to-pink-50 border border-fuchsia-100 p-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white shadow-lg shadow-fuchsia-500/30 group-hover:scale-110 transition-transform">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM16.5 12V8.25" /></svg>
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-fuchsia-950">Avto-obuna</h3>
-            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Haftada/oyda avtomatik buyurtma — doimiy tushum.</p>
+            <h3 class="mt-4 text-lg font-bold text-fuchsia-950">Kompaniya brendi</h3>
+            <p class="mt-2 text-sm text-slate-700 leading-relaxed">Logo, nom, telefon — admin panelda va haydovchi ilovada mijozga ko'rinadi.</p>
           </div>
         </div>
       </div>
@@ -438,11 +438,12 @@ onMounted(() => {
             </div>
             <ul class="mt-6 space-y-3 text-sm text-slate-700 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong>3 gacha haydovchi</strong></li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>500 mijoz, 1000 buyurtma/oy</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Haydovchi mobil ilova</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Naqd + manual karta</li>
-              <li class="flex items-start gap-2 text-slate-400"><svg class="h-5 w-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>Payme/Click</li>
-              <li class="flex items-start gap-2 text-slate-400"><svg class="h-5 w-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>Telegram + SMS</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>500 mijoz · 1000 buyurtma/oy</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Haydovchi ilovasi (iOS + Android)</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Yandex xaritada marshrut</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Naqd + karta to'lov</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Idish balansi avtomat</li>
+              <li class="flex items-start gap-2 text-slate-400"><svg class="h-5 w-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>Payme onlayn — Biznes'da</li>
             </ul>
             <button @click="openDemo" class="mt-8 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 font-semibold hover:border-slate-300 hover:shadow-md transition-all w-full">Boshlash</button>
           </div>
@@ -456,19 +457,21 @@ onMounted(() => {
               </div>
               <h3 class="text-xl font-bold">Biznes</h3>
             </div>
-            <p class="mt-3 text-sm text-brand-50">O'rta biznes — barcha yo'llar ochiq.</p>
+            <p class="mt-3 text-sm text-brand-50">O'rta biznes — cheksiz haydovchi va mijoz.</p>
             <div class="mt-6 text-white">
               <span class="text-5xl font-extrabold tracking-tight">{{ period === 'monthly' ? '249 000' : '2 490 000' }}</span>
               <span class="text-brand-100 ml-1 text-sm">so'm/{{ period === 'monthly' ? 'oy' : 'yil' }}</span>
               <p v-if="period === 'yearly'" class="text-xs text-amber-300 font-semibold mt-1">~500k tejash</p>
             </div>
             <ul class="mt-6 space-y-3 text-sm text-brand-50 flex-1">
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong class="text-white">Cheksiz haydovchi + mijoz</strong></li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Payme + Click onlayn</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Telegram + SMS</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>QR + PWA buyurtma</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Avto-obunalar</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Hisobot + Excel</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong class="text-white">Cheksiz haydovchi · mijoz · buyurtma</strong></li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Start'dagi hamma narsa</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Ko'p operator</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Kompaniya brendi (logo, nom)</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Mijoz qarzlari va segmentlari</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Audit log · buyurtma tarixi</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Prioritet qo'llab-quvvatlash</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Payme onlayn to'lov (yaqinda)</li>
             </ul>
             <button @click="openDemo" class="mt-8 inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white text-brand-700 font-bold hover:bg-brand-50 transition-colors shadow-md">Tanlash — ajoyib taklif</button>
           </div>
@@ -489,11 +492,11 @@ onMounted(() => {
             </div>
             <ul class="mt-6 space-y-3 text-sm text-slate-300 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong class="text-white">Biznes'dagi hammasi +</strong></li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Multi-branch</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>1C integratsiya</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Real-vaqt GPS</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Maxsus hisobotlar</li>
-              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>24/7 prioritet + menejer</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Shaxsiy menejer</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Shaxsiy trening (offline)</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Kastom hisobot so'rov bo'yicha</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Shaxsiy domen (siz tanlang)</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>24/7 prioritet + SLA</li>
             </ul>
             <button @click="openDemo" class="mt-8 inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 font-semibold transition-colors border border-white/20">Bog'lanish</button>
           </div>
@@ -517,7 +520,8 @@ onMounted(() => {
           <span class="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">butun umr ishlating</span>
         </h2>
         <p class="mt-6 text-lg text-slate-300 max-w-2xl mx-auto">
-          Lifetime lisenziya — bir martalik xarid, qayta to'lamasdan cheksiz foydalanish.
+          Lifetime lisenziya — bir martalik to'lov. Obuna yo'q, qayta to'lovsiz. Har yili
+          ming-minglab so'm tejang va biznesingizni bemalol boshqaring.
         </p>
 
         <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -525,7 +529,7 @@ onMounted(() => {
             <p class="text-xs text-slate-400 uppercase tracking-wider">Start Lifetime</p>
             <p class="mt-2 text-4xl font-extrabold">4 470 000 <span class="text-base text-slate-400 font-normal">so'm</span></p>
             <p class="mt-1 text-xs text-emerald-400 font-semibold">~15 oyda o'zini oqlaydi</p>
-            <p class="mt-4 text-sm text-slate-300">Kichik kiosk va kafelar uchun.</p>
+            <p class="mt-4 text-sm text-slate-300">3 gacha haydovchi. Kichik kiosk va kafelar uchun.</p>
             <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
           </div>
           <div class="relative rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 p-8 text-left text-slate-900 shadow-2xl shadow-amber-500/40 lg:scale-105">
@@ -533,22 +537,22 @@ onMounted(() => {
             <p class="text-xs font-bold uppercase tracking-wider">Biznes Lifetime</p>
             <p class="mt-2 text-4xl font-extrabold">11 970 000 <span class="text-base font-semibold">so'm</span></p>
             <p class="mt-1 text-xs font-bold">~16 oyda o'zini oqlaydi</p>
-            <p class="mt-4 text-sm font-medium">Barcha Biznes imkoniyatlari — abadiy.</p>
+            <p class="mt-4 text-sm font-medium">Cheksiz haydovchi va mijoz. O'rta biznes uchun barcha imkoniyatlar — abadiy.</p>
             <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 transition-colors shadow-md">Hoziroq sotib olish</button>
           </div>
           <div class="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 p-8 text-left hover:bg-white/10 transition-colors">
             <p class="text-xs text-slate-400 uppercase tracking-wider">Premium Lifetime</p>
             <p class="mt-2 text-4xl font-extrabold">23 970 000 <span class="text-base text-slate-400 font-normal">so'm</span></p>
             <p class="mt-1 text-xs text-emerald-400 font-semibold">~16 oyda o'zini oqlaydi</p>
-            <p class="mt-4 text-sm text-slate-300">Yirik tarmoqlar uchun.</p>
+            <p class="mt-4 text-sm text-slate-300">Shaxsiy menejer, SLA, kastom integratsiya. Tarmoqlar uchun.</p>
             <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
           </div>
         </div>
 
         <div class="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
           <div class="flex items-center gap-2"><svg class="h-5 w-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Bepul yangilanishlar</div>
-          <div class="flex items-center gap-2"><svg class="h-5 w-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Abadiy yordam</div>
-          <div class="flex items-center gap-2"><svg class="h-5 w-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>30 kunlik pul qaytarish</div>
+          <div class="flex items-center gap-2"><svg class="h-5 w-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>1 yil qo'llab-quvvatlash</div>
+          <div class="flex items-center gap-2"><svg class="h-5 w-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Ma'lumotlar sizga tegishli</div>
         </div>
       </div>
     </section>
