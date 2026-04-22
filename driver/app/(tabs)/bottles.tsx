@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -34,11 +34,19 @@ export default function BottlesScreen() {
   });
 
   const loading = meQuery.isLoading || bottlesQuery.isLoading;
+  const [pulling, setPulling] = useState(false);
 
-  function onRefresh() {
+  async function onRefresh() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    meQuery.refetch();
-    if (driverId) bottlesQuery.refetch();
+    setPulling(true);
+    try {
+      await Promise.all([
+        meQuery.refetch(),
+        driverId ? bottlesQuery.refetch() : Promise.resolve(),
+      ]);
+    } finally {
+      setPulling(false);
+    }
   }
 
   if (loading) {
@@ -60,7 +68,7 @@ export default function BottlesScreen() {
         keyExtractor={(b) => b.id}
         refreshControl={
           <RefreshControl
-            refreshing={bottlesQuery.isRefetching}
+            refreshing={pulling}
             onRefresh={onRefresh}
             tintColor={colors.brand}
           />

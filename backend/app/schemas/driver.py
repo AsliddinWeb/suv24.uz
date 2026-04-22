@@ -8,11 +8,16 @@ from app.schemas.common import ORMModel
 
 
 class DriverCreate(BaseModel):
-    user_id: UUID
+    full_name: str = Field(min_length=1, max_length=255)
+    phone: str = Field(min_length=5, max_length=32)
+    password: str = Field(min_length=6, max_length=128)
     vehicle_plate: str | None = Field(default=None, max_length=32)
 
 
 class DriverUpdate(BaseModel):
+    full_name: str | None = Field(default=None, min_length=1, max_length=255)
+    phone: str | None = Field(default=None, min_length=5, max_length=32)
+    password: str | None = Field(default=None, min_length=6, max_length=128)
     vehicle_plate: str | None = Field(default=None, max_length=32)
     is_active: bool | None = None
 

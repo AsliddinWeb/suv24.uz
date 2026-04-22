@@ -16,16 +16,48 @@ from app.repositories.company import CompanyRepository
 from app.repositories.user import UserRepository
 
 
+from sqlalchemy import select
+
 DEFAULT_ADMIN_PHONE = os.getenv("SEED_ADMIN_PHONE", "+998900000000")
 DEFAULT_ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD", "admin12345")
 DEFAULT_ADMIN_NAME = os.getenv("SEED_ADMIN_NAME", "Super Admin")
 DEFAULT_COMPANY_NAME = os.getenv("SEED_COMPANY_NAME", "Demo Suv Kompaniyasi")
+
+OWNER_PHONE = os.getenv("SEED_OWNER_PHONE", "+998911111111")
+OWNER_PASSWORD = os.getenv("SEED_OWNER_PASSWORD", "owner12345")
+OWNER_NAME = os.getenv("SEED_OWNER_NAME", "Suv24 Owner")
 
 
 async def seed() -> None:
     async with AsyncSessionLocal() as db:
         companies = CompanyRepository(db)
         users = UserRepository(db)
+
+        # Platform owner (no company scope)
+        owner = (
+            await db.execute(
+                select(User).where(
+                    User.phone == OWNER_PHONE,
+                    User.role == UserRole.PLATFORM_OWNER,
+                )
+            )
+        ).scalar_one_or_none()
+        if owner is None:
+            owner = User(
+                company_id=None,
+                phone=OWNER_PHONE,
+                password_hash=hash_password(OWNER_PASSWORD),
+                full_name=OWNER_NAME,
+                role=UserRole.PLATFORM_OWNER,
+                is_active=True,
+            )
+            db.add(owner)
+            await db.flush()
+            await db.commit()
+            print(f"[seed] created platform owner: {owner.phone}")
+            print(f"[seed] owner password: {OWNER_PASSWORD}")
+        else:
+            print(f"[seed] platform owner already exists: {owner.phone}")
 
         company = await companies.get_by_slug(settings.DEFAULT_COMPANY_SLUG)
         if company is None:

@@ -6,11 +6,23 @@ export const driversApi = {
 
   get: (id: UUID) => http.get<DriverOut>(`/drivers/${id}`).then((r) => r.data),
 
-  create: (body: { user_id: UUID; vehicle_plate?: string }) =>
-    http.post<DriverOut>("/drivers", body).then((r) => r.data),
+  create: (body: {
+    full_name: string;
+    phone: string;
+    password: string;
+    vehicle_plate?: string | null;
+  }) => http.post<DriverOut>("/drivers", body).then((r) => r.data),
 
-  update: (id: UUID, body: { vehicle_plate?: string; is_active?: boolean }) =>
-    http.patch<DriverOut>(`/drivers/${id}`, body).then((r) => r.data),
+  update: (
+    id: UUID,
+    body: {
+      full_name?: string | null;
+      phone?: string | null;
+      password?: string | null;
+      vehicle_plate?: string | null;
+      is_active?: boolean | null;
+    },
+  ) => http.patch<DriverOut>(`/drivers/${id}`, body).then((r) => r.data),
 
   remove: (id: UUID) => http.delete(`/drivers/${id}`).then((r) => r.data),
 

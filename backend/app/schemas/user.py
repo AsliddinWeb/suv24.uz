@@ -8,7 +8,7 @@ from app.schemas.common import ORMModel
 
 class UserOut(ORMModel):
     id: UUID
-    company_id: UUID
+    company_id: UUID | None = None
     phone: str
     full_name: str
     role: UserRole

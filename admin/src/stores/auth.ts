@@ -40,7 +40,12 @@ export const useAuthStore = defineStore("auth", () => {
     const res = await authApi.login(phone, password, company_slug);
     tokenStorage.set(res.access_token, res.refresh_token, res.user);
     user.value = res.user;
-    await loadCompany().catch(() => undefined);
+    if (res.user.role !== "platform_owner") {
+      await loadCompany().catch(() => undefined);
+    } else {
+      company.value = null;
+      saveCachedCompany(null);
+    }
   }
 
   async function logout() {

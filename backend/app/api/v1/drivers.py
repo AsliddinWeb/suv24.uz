@@ -1,9 +1,12 @@
+from datetime import datetime, timezone
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 
 from app.core.deps import CurrentUser, DbDep, require_roles
+from app.core.security import hash_password
 from app.models.driver import Driver
 from app.models.user import User, UserRole
 from app.repositories.driver import DriverRepository
@@ -41,7 +44,6 @@ async def list_drivers(
     only_active: bool = Query(default=False),
 ) -> list[DriverWithUserOut]:
     repo = DriverRepository(db)
-    # Driver sees only their own profile
     if user.role == UserRole.DRIVER:
         own = await repo.get_by_user_id(user.company_id, user.id)
         return [_with_user(own)] if own else []
@@ -65,29 +67,43 @@ async def create_driver(
     user: AdminUser,
     db: DbDep,
 ) -> DriverWithUserOut:
+    """Create a new driver: provisions a User(role=driver) and Driver profile in one step."""
     users = UserRepository(db)
     drivers = DriverRepository(db)
 
-    target_user = await users.get_by_id(payload.user_id)
-    if target_user is None or target_user.company_id != user.company_id:
-        raise HTTPException(status_code=404, detail="User not found")
-    if target_user.role != UserRole.DRIVER:
+    existing_user = await users.get_by_phone(user.company_id, payload.phone)
+    if existing_user is not None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Target user must have role=driver",
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Bu telefon raqami band",
         )
-    existing = await drivers.get_by_user_id(user.company_id, target_user.id)
-    if existing is not None:
-        raise HTTPException(status_code=409, detail="Driver profile already exists")
 
-    driver = await drivers.create(
-        Driver(
-            company_id=user.company_id,
-            user_id=target_user.id,
-            vehicle_plate=payload.vehicle_plate,
-            is_active=True,
-        )
+    new_user = User(
+        company_id=user.company_id,
+        phone=payload.phone,
+        password_hash=hash_password(payload.password),
+        full_name=payload.full_name,
+        role=UserRole.DRIVER,
+        is_active=True,
     )
+    db.add(new_user)
+    try:
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Bu telefon raqami band",
+        )
+
+    driver = Driver(
+        company_id=user.company_id,
+        user_id=new_user.id,
+        vehicle_plate=payload.vehicle_plate,
+        is_active=True,
+    )
+    db.add(driver)
+    await db.flush()
     await db.commit()
     await db.refresh(driver)
     return _with_user(driver)
@@ -112,9 +128,37 @@ async def update_driver(
     driver = await drivers.get(user.company_id, driver_id)
     if driver is None:
         raise HTTPException(status_code=404, detail="Driver not found")
+
     changes = payload.model_dump(exclude_unset=True)
-    for field, value in changes.items():
+    # Fields that live on the linked User
+    user_fields = {"full_name", "phone", "password"}
+    user_changes = {k: v for k, v in changes.items() if k in user_fields}
+    driver_changes = {k: v for k, v in changes.items() if k not in user_fields}
+
+    if user_changes:
+        target_user = driver.user
+        if "phone" in user_changes and user_changes["phone"] != target_user.phone:
+            clashing = await UserRepository(db).get_by_phone(user.company_id, user_changes["phone"])
+            if clashing is not None and clashing.id != target_user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Bu telefon raqami band",
+                )
+            target_user.phone = user_changes["phone"]
+        if "full_name" in user_changes:
+            target_user.full_name = user_changes["full_name"]
+        if "password" in user_changes:
+            target_user.password_hash = hash_password(user_changes["password"])
+
+    for field, value in driver_changes.items():
         setattr(driver, field, value)
+
+    try:
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="Konflikt")
+
     await db.commit()
     await db.refresh(driver)
     return _with_user(driver)
@@ -126,6 +170,13 @@ async def delete_driver(driver_id: UUID, user: AdminUser, db: DbDep) -> OkRespon
     driver = await drivers.get(user.company_id, driver_id)
     if driver is None:
         raise HTTPException(status_code=404, detail="Driver not found")
-    await drivers.delete(driver)
+
+    now = datetime.now(tz=timezone.utc)
+    driver.deleted_at = now
+    driver.is_active = False
+    # Also deactivate the underlying User so they can't log in via driver app
+    driver.user.is_active = False
+    driver.user.deleted_at = now
+
     await db.commit()
     return OkResponse()

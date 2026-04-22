@@ -32,10 +32,11 @@ export default function OrdersListScreen() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [filter, setFilter] = useState<OrderStatus | null>(null);
+  const [pulling, setPulling] = useState(false);
   const seenIdsRef = useRef<Set<string>>(new Set());
   const firstLoadRef = useRef(true);
 
-  const { data, isLoading, isRefetching, refetch } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["orders", filter],
     queryFn: () => ordersApi.list({ status: filter ?? undefined, page_size: 50 }),
     staleTime: 15_000,
@@ -83,9 +84,14 @@ export default function OrdersListScreen() {
     setFilter(next);
   }
 
-  function onRefresh() {
+  async function onRefresh() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    refetch();
+    setPulling(true);
+    try {
+      await refetch();
+    } finally {
+      setPulling(false);
+    }
   }
 
   return (
@@ -140,7 +146,7 @@ export default function OrdersListScreen() {
         />
       </View>
 
-      {isLoading ? (
+      {isLoading && items.length === 0 ? (
         <View style={styles.loading}>
           <ActivityIndicator size="large" color={colors.brand} />
         </View>
@@ -151,7 +157,7 @@ export default function OrdersListScreen() {
           contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 28 }}
           refreshControl={
             <RefreshControl
-              refreshing={isRefetching}
+              refreshing={pulling}
               onRefresh={onRefresh}
               tintColor={colors.brand}
             />

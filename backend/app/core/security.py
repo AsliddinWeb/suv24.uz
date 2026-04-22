@@ -55,14 +55,18 @@ def _build_claims(
 def create_access_token(
     user_id: UUID,
     role: str,
-    company_id: UUID,
+    company_id: UUID | None,
     extra: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, Any]]:
     claims = _build_claims(
         subject=str(user_id),
         token_type=TokenType.ACCESS,
         ttl=timedelta(minutes=settings.JWT_ACCESS_TTL_MINUTES),
-        extra={"role": role, "company_id": str(company_id), **(extra or {})},
+        extra={
+            "role": role,
+            "company_id": str(company_id) if company_id else None,
+            **(extra or {}),
+        },
     )
     token = jwt.encode(claims, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return token, claims
@@ -70,13 +74,13 @@ def create_access_token(
 
 def create_refresh_token(
     user_id: UUID,
-    company_id: UUID,
+    company_id: UUID | None,
 ) -> tuple[str, dict[str, Any]]:
     claims = _build_claims(
         subject=str(user_id),
         token_type=TokenType.REFRESH,
         ttl=timedelta(days=settings.JWT_REFRESH_TTL_DAYS),
-        extra={"company_id": str(company_id)},
+        extra={"company_id": str(company_id) if company_id else None},
     )
     token = jwt.encode(claims, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return token, claims

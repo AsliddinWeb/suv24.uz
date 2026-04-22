@@ -5,7 +5,7 @@ import {
   TruckIcon,
   CubeIcon,
   TrashIcon,
-  EllipsisHorizontalIcon,
+  PencilSquareIcon,
 } from "@heroicons/vue/20/solid";
 import { driversApi } from "@/api/drivers";
 import { productsApi } from "@/api/products";
@@ -26,6 +26,19 @@ const drivers = ref<DriverOut[]>([]);
 const products = ref<ProductOut[]>([]);
 const loading = ref(false);
 
+// Create + edit modal
+const formOpen = ref(false);
+const saving = ref(false);
+const editing = ref<DriverOut | null>(null);
+const form = reactive({
+  full_name: "",
+  phone: "",
+  password: "",
+  vehicle_plate: "",
+  is_active: true,
+});
+
+// Bottle balance modal
 const bottlesOpen = ref(false);
 const bottlesFor = ref<DriverOut | null>(null);
 const balances = ref<BottleBalanceWithProduct[]>([]);
@@ -52,6 +65,64 @@ async function load() {
 }
 
 onMounted(load);
+
+function openCreate() {
+  editing.value = null;
+  form.full_name = "";
+  form.phone = "+998";
+  form.password = "";
+  form.vehicle_plate = "";
+  form.is_active = true;
+  formOpen.value = true;
+}
+
+function openEdit(d: DriverOut) {
+  editing.value = d;
+  form.full_name = d.full_name;
+  form.phone = d.phone;
+  form.password = "";
+  form.vehicle_plate = d.vehicle_plate || "";
+  form.is_active = d.is_active;
+  formOpen.value = true;
+}
+
+async function submitForm() {
+  if (!form.full_name.trim() || !form.phone.trim()) {
+    toast.warning("Ism va telefon majburiy");
+    return;
+  }
+  if (!editing.value && form.password.length < 6) {
+    toast.warning("Parol kamida 6 belgi");
+    return;
+  }
+  saving.value = true;
+  try {
+    if (editing.value) {
+      await driversApi.update(editing.value.id, {
+        full_name: form.full_name,
+        phone: form.phone,
+        password: form.password ? form.password : null,
+        vehicle_plate: form.vehicle_plate || null,
+        is_active: form.is_active,
+      });
+      toast.success("Saqlandi");
+    } else {
+      await driversApi.create({
+        full_name: form.full_name,
+        phone: form.phone,
+        password: form.password,
+        vehicle_plate: form.vehicle_plate || null,
+      });
+      toast.success("Haydovchi qo'shildi");
+    }
+    formOpen.value = false;
+    await load();
+  } catch (e: any) {
+    toast.error(e?.response?.data?.detail || "Saqlab bo'lmadi");
+  } finally {
+    saving.value = false;
+  }
+}
 
 async function showBottles(d: DriverOut) {
   bottlesFor.value = d;
@@ -85,7 +156,7 @@ async function submitAdjust() {
 async function onDelete(d: DriverOut) {
   const ok = await confirm({
     title: "Haydovchini o'chirish",
-    description: `${d.full_name}${d.vehicle_plate ? " (" + d.vehicle_plate + ")" : ""} haydovchisini o'chirmoqchimisiz?`,
+    description: `${d.full_name}${d.vehicle_plate ? " (" + d.vehicle_plate + ")" : ""} — o'chirilsa, driver ilovaga kira olmaydi. Ma'lumotlar DB'da qoladi.`,
     confirmLabel: "O'chirish",
     tone: "danger",
   });
@@ -98,9 +169,27 @@ async function onDelete(d: DriverOut) {
 
 <template>
   <div class="space-y-6">
-    <PageHeader title="Haydovchilar" subtitle="Haydovchilar va ularning idish balansi" />
+    <PageHeader title="Haydovchilar" subtitle="Haydovchilar va ularning idish balansi">
+      <template #actions>
+        <button class="btn-primary" @click="openCreate">
+          <PlusIcon class="h-4 w-4" />
+          Yangi haydovchi
+        </button>
+      </template>
+    </PageHeader>
 
-    <EmptyState v-if="!loading && !drivers.length" title="Haydovchi yo'q" />
+    <EmptyState
+      v-if="!loading && !drivers.length"
+      title="Haydovchi yo'q"
+      description="Birinchi haydovchini qo'shing — ism, telefon, parol va mashina raqami"
+    >
+      <template #actions>
+        <button class="btn-primary" @click="openCreate">
+          <PlusIcon class="h-4 w-4" />
+          Qo'shish
+        </button>
+      </template>
+    </EmptyState>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="d in drivers" :key="d.id" class="card p-5">
@@ -116,6 +205,10 @@ async function onDelete(d: DriverOut) {
             {{ d.is_active ? "Faol" : "Nofaol" }}
           </AppBadge>
           <AppMenu>
+            <AppMenuItem @click="openEdit(d)">
+              <PencilSquareIcon class="h-4 w-4" />
+              Tahrirlash
+            </AppMenuItem>
             <AppMenuItem @click="showBottles(d)">
               <CubeIcon class="h-4 w-4" />
               Idish balansi
@@ -138,6 +231,57 @@ async function onDelete(d: DriverOut) {
         </button>
       </div>
     </div>
+
+    <!-- Create / Edit driver -->
+    <AppDialog v-model:open="formOpen" :title="editing ? 'Haydovchini tahrirlash' : 'Yangi haydovchi'" max-width="max-w-lg">
+      <form class="space-y-4" @submit.prevent="submitForm">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Ism</label>
+          <input v-model="form.full_name" class="input" placeholder="Ism Familiya" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Telefon</label>
+            <input v-model="form.phone" type="tel" class="input" placeholder="+998..." autocomplete="off" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              Parol
+              <span v-if="editing" class="text-xs text-slate-400 font-normal">(ixtiyoriy)</span>
+            </label>
+            <input
+              v-model="form.password"
+              type="text"
+              class="input"
+              :placeholder="editing ? 'O\'zgartirmaslik uchun bo\'sh qoldiring' : 'kamida 6 belgi'"
+              autocomplete="new-password"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Mashina raqami</label>
+          <input v-model="form.vehicle_plate" class="input" placeholder="01 A 123 AA" />
+        </div>
+
+        <label v-if="editing" class="flex items-center gap-2 cursor-pointer">
+          <input v-model="form.is_active" type="checkbox" class="rounded border-slate-300" />
+          <span class="text-sm text-slate-700 dark:text-slate-300">Faol (driver ilovaga kira oladi)</span>
+        </label>
+
+        <p v-if="!editing" class="text-xs text-slate-500 dark:text-slate-400">
+          Haydovchi driver ilovaga shu telefon va parol bilan kiradi.
+        </p>
+      </form>
+
+      <template #footer>
+        <button class="btn-secondary" @click="formOpen = false">Bekor qilish</button>
+        <button class="btn-primary" :disabled="saving" @click="submitForm">
+          {{ saving ? "Saqlanmoqda..." : editing ? "Saqlash" : "Qo'shish" }}
+        </button>
+      </template>
+    </AppDialog>
 
     <AppDialog v-model:open="bottlesOpen" :title="`${bottlesFor?.full_name} — idish balansi`" max-width="max-w-xl">
       <EmptyState v-if="!balances.length" title="Balans bo'sh" description="Ombor kursidan birinchi marta yuklang" />

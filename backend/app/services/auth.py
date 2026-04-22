@@ -14,7 +14,9 @@ from app.core.security import (
     decode_token,
     verify_password,
 )
-from app.models.user import User
+from sqlalchemy import select
+
+from app.models.user import User, UserRole
 from app.repositories.company import CompanyRepository
 from app.repositories.user import UserRepository
 from app.schemas.auth import TokenPair
@@ -40,26 +42,76 @@ class AuthService:
         password: str,
         company_slug: str | None,
     ) -> User:
-        slug = company_slug or settings.DEFAULT_COMPANY_SLUG
-        company = await self.companies.get_by_slug(slug)
-        if company is None or not company.is_active:
+        # Platform owner is not scoped to a company; look them up by phone alone.
+        owner = await self._get_platform_owner_by_phone(phone)
+        if owner is not None:
+            if not owner.is_active or not verify_password(password, owner.password_hash):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid credentials",
+                )
+            return owner
+
+        # If slug is provided, scope to that company.
+        if company_slug:
+            company = await self.companies.get_by_slug(company_slug)
+            if company is None or not company.is_active:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid credentials",
+                )
+            user = await self.users.get_by_phone(company.id, phone)
+            candidates = [user] if user is not None else []
+        else:
+            # No slug: search across all active companies by phone.
+            candidates = await self._find_active_users_by_phone(phone)
+
+        if not candidates:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
+            )
+        if len(candidates) > 1:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "Bu telefon bir nechta kompaniyaga tegishli. "
+                    "Kompaniya slug'ini kiriting."
+                ),
             )
 
-        user = await self.users.get_by_phone(company.id, phone)
-        if user is None or not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid credentials",
-            )
-        if not verify_password(password, user.password_hash):
+        user = candidates[0]
+        if not user.is_active or not verify_password(password, user.password_hash):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
             )
         return user
+
+    async def _get_platform_owner_by_phone(self, phone: str) -> User | None:
+        stmt = select(User).where(
+            User.phone == phone,
+            User.role == UserRole.PLATFORM_OWNER,
+            User.deleted_at.is_(None),
+        )
+        return (await self.db.execute(stmt)).scalar_one_or_none()
+
+    async def _find_active_users_by_phone(self, phone: str) -> list[User]:
+        from app.models.company import Company
+
+        stmt = (
+            select(User)
+            .join(Company, Company.id == User.company_id)
+            .where(
+                User.phone == phone,
+                User.deleted_at.is_(None),
+                User.role != UserRole.PLATFORM_OWNER,
+                User.is_active.is_(True),
+                Company.is_active.is_(True),
+                Company.deleted_at.is_(None),
+            )
+        )
+        return list((await self.db.execute(stmt)).scalars().all())
 
     async def issue_tokens(self, user: User) -> TokenPair:
         access, _ = create_access_token(

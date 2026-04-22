@@ -23,6 +23,37 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: "/platform",
+    component: () => import("@/layouts/PlatformLayout.vue"),
+    meta: { requiresAuth: true, platformOnly: true },
+    children: [
+      {
+        path: "",
+        name: "platform-dashboard",
+        component: () => import("@/views/PlatformDashboardView.vue"),
+        meta: { title: "Platforma umumiy holat" },
+      },
+      {
+        path: "companies",
+        name: "platform-companies",
+        component: () => import("@/views/PlatformCompaniesView.vue"),
+        meta: { title: "Kompaniyalar" },
+      },
+      {
+        path: "companies/new",
+        name: "platform-company-new",
+        component: () => import("@/views/PlatformCompanyCreateView.vue"),
+        meta: { title: "Yangi kompaniya" },
+      },
+      {
+        path: "companies/:id",
+        name: "platform-company-detail",
+        component: () => import("@/views/PlatformCompanyDetailView.vue"),
+        meta: { title: "Kompaniya tafsiloti" },
+      },
+    ],
+  },
+  {
     path: "/app",
     component: () => import("@/layouts/AppLayout.vue"),
     meta: { requiresAuth: true },
@@ -114,8 +145,16 @@ router.beforeEach((to) => {
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: "login", query: { next: to.fullPath } };
   }
+  const isOwner = auth.role === "platform_owner";
   if (to.name === "login" && auth.isAuthenticated) {
+    return isOwner ? { name: "platform-dashboard" } : { name: "dashboard" };
+  }
+  if (to.meta.platformOnly && !isOwner) {
     return { name: "dashboard" };
+  }
+  // Platform owner can't access tenant app routes
+  if (to.path.startsWith("/app") && isOwner) {
+    return { name: "platform-dashboard" };
   }
   if (to.meta.adminOnly && !auth.hasRole("super_admin", "admin")) {
     return { name: "dashboard" };

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
+import { RouterLink } from "vue-router";
 import {
   PlusIcon,
   TrashIcon,
@@ -56,13 +57,15 @@ const pwdOpen = ref(false);
 const pwdTarget = ref<UserOut | null>(null);
 const newPassword = ref("");
 
+// Drivers are managed in the Drivers page (they need vehicle, bottle balance etc.),
+// so we exclude "driver" from the Users create/edit dropdown.
 const roleOptions = [
   { value: "admin" as UserRole, label: "Admin" },
   { value: "operator" as UserRole, label: "Operator" },
-  { value: "driver" as UserRole, label: "Haydovchi" },
 ];
 
 const roleLabel: Record<UserRole, string> = {
+  platform_owner: "Platform owner",
   super_admin: "Super admin",
   admin: "Admin",
   operator: "Operator",
@@ -70,6 +73,7 @@ const roleLabel: Record<UserRole, string> = {
 };
 
 const roleVariant: Record<UserRole, "success" | "warning" | "info" | "neutral" | "primary"> = {
+  platform_owner: "primary",
   super_admin: "primary",
   admin: "warning",
   operator: "info",
@@ -282,6 +286,9 @@ async function onDelete(u: UserOut) {
         <div>
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Rol</label>
           <AppSelect v-model="createForm.role" :options="roleOptions" />
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+            Haydovchi yaratish uchun <RouterLink to="/app/drivers" class="text-brand-600 font-medium hover:underline">Haydovchilar</RouterLink> sahifasidan foydalaning.
+          </p>
         </div>
       </div>
       <template #footer>

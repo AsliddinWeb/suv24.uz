@@ -37,6 +37,16 @@ async def create_user(
     user: AdminUser,
     db: DbDep,
 ) -> UserOut:
+    if payload.role == UserRole.DRIVER:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Haydovchi yaratish uchun Haydovchilar sahifasidan foydalaning",
+        )
+    if payload.role == UserRole.PLATFORM_OWNER:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Platform owner bu sahifadan yaratilmaydi",
+        )
     repo = UserRepository(db)
     try:
         created = await repo.create(

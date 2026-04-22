@@ -25,8 +25,9 @@ async function onSubmit() {
   try {
     await auth.login(form.phone, form.password);
     toast.success("Xush kelibsiz");
-    const next = (route.query.next as string) || "/app/dashboard";
-    router.push(next);
+    const nextParam = route.query.next as string | undefined;
+    const defaultHome = auth.role === "platform_owner" ? "/platform" : "/app/dashboard";
+    router.push(nextParam || defaultHome);
   } catch (e: any) {
     toast.error(e?.response?.data?.detail || "Kirish xato");
   } finally {
