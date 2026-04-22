@@ -10,8 +10,8 @@ const router = useRouter();
 const auth = useAuthStore();
 
 const form = reactive({
-  phone: "+998900000000",
-  password: "admin12345",
+  phone: "+998",
+  password: "",
 });
 const loading = ref(false);
 const showPassword = ref(false);
@@ -91,10 +91,5 @@ async function onSubmit() {
       </button>
     </form>
 
-    <div class="mt-6 rounded-lg bg-slate-50 dark:bg-slate-800/50 px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
-      <div class="font-medium mb-1 text-slate-700 dark:text-slate-300">Dev credentials</div>
-      <div>Telefon: <span class="kbd">+998900000000</span></div>
-      <div class="mt-1">Parol: <span class="kbd">admin12345</span></div>
-    </div>
   </div>
 </template>

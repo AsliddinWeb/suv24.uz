@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import DemoRequestDialog from "@/components/DemoRequestDialog.vue";
 
 const router = useRouter();
 const period = ref<"monthly" | "yearly">("monthly");
+const demoOpen = ref(false);
 
 function goLogin() {
   router.push("/login");
 }
 
-function goApp() {
-  router.push("/app/dashboard");
+function openDemo() {
+  demoOpen.value = true;
 }
 
 function scrollTo(selector: string, e?: Event) {
@@ -65,7 +67,7 @@ onMounted(() => {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
         <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold mb-6 shadow-sm">
           <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          14 kun bepul sinash · Karta kerak emas
+          14 kun bepul sinab ko'ring
         </div>
 
         <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] max-w-4xl mx-auto">
@@ -442,7 +444,7 @@ onMounted(() => {
               <li class="flex items-start gap-2 text-slate-400"><svg class="h-5 w-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>Payme/Click</li>
               <li class="flex items-start gap-2 text-slate-400"><svg class="h-5 w-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>Telegram + SMS</li>
             </ul>
-            <button @click="goLogin" class="mt-8 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 font-semibold hover:border-slate-300 hover:shadow-md transition-all w-full">Boshlash</button>
+            <button @click="openDemo" class="mt-8 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 font-semibold hover:border-slate-300 hover:shadow-md transition-all w-full">Boshlash</button>
           </div>
 
           <!-- Biznes -->
@@ -468,7 +470,7 @@ onMounted(() => {
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Avto-obunalar</li>
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Hisobot + Excel</li>
             </ul>
-            <button @click="goLogin" class="mt-8 inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white text-brand-700 font-bold hover:bg-brand-50 transition-colors shadow-md">Tanlash — ajoyib taklif</button>
+            <button @click="openDemo" class="mt-8 inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white text-brand-700 font-bold hover:bg-brand-50 transition-colors shadow-md">Tanlash — ajoyib taklif</button>
           </div>
 
           <!-- Premium -->
@@ -493,7 +495,7 @@ onMounted(() => {
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Maxsus hisobotlar</li>
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>24/7 prioritet + menejer</li>
             </ul>
-            <button @click="goLogin" class="mt-8 inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 font-semibold transition-colors border border-white/20">Bog'lanish</button>
+            <button @click="openDemo" class="mt-8 inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 font-semibold transition-colors border border-white/20">Bog'lanish</button>
           </div>
         </div>
       </div>
@@ -524,7 +526,7 @@ onMounted(() => {
             <p class="mt-2 text-4xl font-extrabold">4 470 000 <span class="text-base text-slate-400 font-normal">so'm</span></p>
             <p class="mt-1 text-xs text-emerald-400 font-semibold">~15 oyda o'zini oqlaydi</p>
             <p class="mt-4 text-sm text-slate-300">Kichik kiosk va kafelar uchun.</p>
-            <button @click="goLogin" class="mt-6 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
+            <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
           </div>
           <div class="relative rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 p-8 text-left text-slate-900 shadow-2xl shadow-amber-500/40 lg:scale-105">
             <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-amber-400 px-4 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider">🔥 Eng foydali</div>
@@ -532,14 +534,14 @@ onMounted(() => {
             <p class="mt-2 text-4xl font-extrabold">11 970 000 <span class="text-base font-semibold">so'm</span></p>
             <p class="mt-1 text-xs font-bold">~16 oyda o'zini oqlaydi</p>
             <p class="mt-4 text-sm font-medium">Barcha Biznes imkoniyatlari — abadiy.</p>
-            <button @click="goLogin" class="mt-6 block w-full text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 transition-colors shadow-md">Hoziroq sotib olish</button>
+            <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 transition-colors shadow-md">Hoziroq sotib olish</button>
           </div>
           <div class="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 p-8 text-left hover:bg-white/10 transition-colors">
             <p class="text-xs text-slate-400 uppercase tracking-wider">Premium Lifetime</p>
             <p class="mt-2 text-4xl font-extrabold">23 970 000 <span class="text-base text-slate-400 font-normal">so'm</span></p>
             <p class="mt-1 text-xs text-emerald-400 font-semibold">~16 oyda o'zini oqlaydi</p>
             <p class="mt-4 text-sm text-slate-300">Yirik tarmoqlar uchun.</p>
-            <button @click="goLogin" class="mt-6 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
+            <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
           </div>
         </div>
 
@@ -564,7 +566,7 @@ onMounted(() => {
               <span>Sinash davrida hamma narsa ochiqmi?</span>
               <svg class="h-5 w-5 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
             </summary>
-            <p class="mt-3 text-sm text-slate-600">14 kun Premium ochiq. Karta kerak emas. Muddat tugagach tanlov qilasiz.</p>
+            <p class="mt-3 text-sm text-slate-600">14 kun Premium ochiq. Muddat tugagach tanlov qilasiz.</p>
           </details>
           <details class="group rounded-2xl bg-white border border-slate-200 p-5 cursor-pointer">
             <summary class="flex items-center justify-between font-semibold list-none">
@@ -609,10 +611,10 @@ onMounted(() => {
           Ertaga emas — <span class="text-amber-300">bugun</span> boshlang
         </h2>
         <p class="mt-6 text-lg sm:text-xl text-brand-100 max-w-2xl mx-auto">
-          14 kun bepul. Karta kerak emas. Bir haftadan keyin farqni ko'rasiz.
+          14 kun bepul. Bir haftadan keyin farqni ko'rasiz.
         </p>
         <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <button @click="goLogin" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white text-brand-700 font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+          <button @click="openDemo" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white text-brand-700 font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
             Bepul sinashni boshlash
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/></svg>
           </button>
@@ -662,6 +664,8 @@ onMounted(() => {
         </div>
       </div>
     </footer>
+
+    <DemoRequestDialog v-model:open="demoOpen" />
   </div>
 </template>
 

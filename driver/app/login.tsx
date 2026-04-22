@@ -22,8 +22,8 @@ export default function LoginScreen() {
   const { colors, isDark } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const [phone, setPhone] = useState("+998933333333");
-  const [password, setPassword] = useState("driver1234");
+  const [phone, setPhone] = useState("+998");
+  const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -128,14 +128,6 @@ export default function LoginScreen() {
             </>
           )}
         </Pressable>
-
-        <View style={styles.devHint}>
-          <View style={styles.devHintHeader}>
-            <Ionicons name="flash" size={13} color={colors.warning} />
-            <Text style={styles.devHintLabel}>Dev credentials</Text>
-          </View>
-          <Text style={styles.devHintText}>+998933333333 / driver1234</Text>
-        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -198,26 +190,4 @@ const makeStyles = (c: ColorsScheme) =>
       elevation: 6,
     },
     submitText: { color: "#fff", fontSize: 16, fontWeight: "700", letterSpacing: 0.3 },
-    devHint: {
-      marginTop: 28,
-      padding: 14,
-      borderRadius: 12,
-      backgroundColor: c.warningSoft,
-      borderWidth: 1,
-      borderColor: c.warning + "30",
-    },
-    devHintHeader: { flexDirection: "row", alignItems: "center", gap: 5 },
-    devHintLabel: {
-      fontSize: 11,
-      fontWeight: "700",
-      color: c.warning,
-      textTransform: "uppercase",
-      letterSpacing: 0.8,
-    },
-    devHintText: {
-      fontSize: 13,
-      color: c.text,
-      marginTop: 4,
-      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-    },
   });

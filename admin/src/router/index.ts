@@ -40,6 +40,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "Kompaniyalar" },
       },
       {
+        path: "leads",
+        name: "platform-leads",
+        component: () => import("@/views/PlatformLeadsView.vue"),
+        meta: { title: "Mijoz arizalari" },
+      },
+      {
         path: "companies/new",
         name: "platform-company-new",
         component: () => import("@/views/PlatformCompanyCreateView.vue"),

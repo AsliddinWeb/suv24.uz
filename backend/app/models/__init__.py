@@ -3,6 +3,7 @@ from app.models.bottle import DriverBottleBalance
 from app.models.company import Company
 from app.models.customer import Customer, CustomerAddress, CustomerSegment
 from app.models.driver import Driver
+from app.models.lead import Lead, LeadStatus
 from app.models.order import (
     ALLOWED_TRANSITIONS,
     REASON_REQUIRED,
@@ -31,6 +32,8 @@ __all__ = [
     "Product",
     "ProductPrice",
     "Driver",
+    "Lead",
+    "LeadStatus",
     "Order",
     "OrderItem",
     "OrderStatus",

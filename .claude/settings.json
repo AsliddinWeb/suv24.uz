@@ -103,7 +103,18 @@
       "Bash(git commit -m 'chore: remove unused APP_HOST/APP_PORT config vars *)",
       "Bash(git mv *)",
       "Bash(git commit -m 'chore\\(deploy\\): rename nginx/suv24.uz.conf -> suv24.uz \\(match sites-available style\\) *)",
-      "Bash(git commit -m 'fix\\(deploy\\): prevent dev ports from leaking into prod backend \\(CVE-like\\) *)"
+      "Bash(git commit -m 'fix\\(deploy\\): prevent dev ports from leaking into prod backend \\(CVE-like\\) *)",
+      "Bash(dig @8.8.8.8 +short suv24.uz)",
+      "Bash(dig @8.8.8.8 +short www.suv24.uz)",
+      "Bash(curl -sI --max-time 10 http://suv24.uz)",
+      "Bash(curl -s --max-time 10 http://suv24.uz/api/v1/health)",
+      "Bash(curl -sI --max-time 10 -H \"Host: suv24.uz\" http://164.92.240.184)",
+      "Bash(curl -v --max-time 8 http://suv24.uz)",
+      "Bash(nc -zv -w 5 164.92.240.184 80)",
+      "Bash(nc -zv -w 5 164.92.240.184 443)",
+      "Bash(curl -sI --max-time 8 --resolve suv24.uz:80:164.92.240.184 http://suv24.uz)",
+      "Bash(curl -s --max-time 8 --resolve suv24.uz:80:164.92.240.184 http://suv24.uz/api/v1/health)",
+      "Bash(curl -s -X POST http://localhost:8017/api/v1/leads -H \"Content-Type: application/json\" -d '{\"full_name\":\"Test Mijoz\",\"phone\":\"+998901112233\",\"company_name\":\"Test Biznes\"}')"
     ],
     "additionalDirectories": [
       "/Users/a1234/Desktop/Live/water_delivery/admin/public"

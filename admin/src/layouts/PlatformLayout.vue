@@ -4,6 +4,7 @@ import { RouterView, useRoute, useRouter } from "vue-router";
 import {
   HomeIcon,
   BuildingOffice2Icon,
+  ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
@@ -21,6 +22,7 @@ const mobileOpen = ref(false);
 const nav = computed(() => [
   { path: "/platform", label: "Umumiy holat", icon: HomeIcon, exact: true },
   { path: "/platform/companies", label: "Kompaniyalar", icon: BuildingOffice2Icon },
+  { path: "/platform/leads", label: "Mijoz arizalari", icon: ChatBubbleLeftRightIcon },
 ]);
 
 function isActive(path: string, exact?: boolean) {
