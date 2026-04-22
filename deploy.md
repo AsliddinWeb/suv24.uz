@@ -148,13 +148,13 @@ Config'da faqat HTTP (port 80) bor — certbot ishga tushgach, SSL direktivalari
 
 ```bash
 # Config nusxasini nginx'ga o'rnatish
-sudo cp /home/projects/suv24.uz/nginx/suv24.uz.conf /etc/nginx/sites-available/suv24.uz.conf
+sudo cp /home/projects/suv24.uz/nginx/suv24.uz /etc/nginx/sites-available/suv24.uz
 
 # Agar ADMIN_HOST_PORT 8020 dan boshqa bo'lsa — config'da ham o'zgartiring
-# sudo sed -i 's|127.0.0.1:8020|127.0.0.1:9020|g' /etc/nginx/sites-available/suv24.uz.conf
+# sudo sed -i 's|127.0.0.1:8020|127.0.0.1:9020|g' /etc/nginx/sites-available/suv24.uz
 
 # Enable
-sudo ln -s /etc/nginx/sites-available/suv24.uz.conf /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/suv24.uz /etc/nginx/sites-enabled/
 
 # Sintaksis tekshir va reload
 sudo nginx -t
@@ -177,7 +177,7 @@ Certbot avtomatik qiladi:
 Natijani ko'rish:
 
 ```bash
-sudo cat /etc/nginx/sites-available/suv24.uz.conf
+sudo cat /etc/nginx/sites-available/suv24.uz
 ```
 
 ## 7. Tekshirish
@@ -252,7 +252,7 @@ git pull origin main
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 # Agar nginx config o'zgartirgan bo'lsangiz:
-sudo cp nginx/suv24.uz.conf /etc/nginx/sites-available/suv24.uz.conf
+sudo cp nginx/suv24.uz /etc/nginx/sites-available/suv24.uz
 sudo nginx -t && sudo systemctl reload nginx
 ```
 

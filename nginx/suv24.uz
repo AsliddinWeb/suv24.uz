@@ -1,4 +1,4 @@
-# /etc/nginx/sites-available/suv24.uz.conf
+# /etc/nginx/sites-available/suv24.uz
 # Symlink to sites-enabled. Run `certbot --nginx` afterwards; it adds SSL
 # directives, HTTPS redirect, and reloads nginx automatically.
 #
