@@ -1,0 +1,41 @@
+# Production override. Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Key differences vs dev compose:
+#   - All host ports bound to 127.0.0.1 (only accessible via host nginx)
+#   - Postgres/Redis have NO host ports (internal network only)
+#   - Backend has no source code volume mount; uses image contents
+#   - Backend runs without --reload; production-grade worker count
+#   - Media volume persisted on host for backup
+
+services:
+  postgres:
+    restart: always
+    # Drop host port exposure in production — backend reaches postgres via docker network
+    ports: !reset []
+
+  redis:
+    restart: always
+    ports: !reset []
+
+  backend:
+    restart: always
+    # Bind ONLY to localhost — nginx on the host proxies requests in.
+    # Change the first "8017" if another project on the server already uses it.
+    ports:
+      - "127.0.0.1:${BACKEND_HOST_PORT:-8017}:8000"
+    # Remove the dev bind-mount so the container uses the built image
+    volumes: !override
+      - wdms_media:/app/media
+    # No --reload in production; run migrations then serve
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app
+                 --host 0.0.0.0
+                 --port 8000
+                 --workers ${UVICORN_WORKERS:-3}
+                 --proxy-headers
+                 --forwarded-allow-ips=*"
+
+volumes:
+  wdms_media:
