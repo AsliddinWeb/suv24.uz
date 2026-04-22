@@ -65,15 +65,15 @@ node --version          # >= 20
 
 ## 3. Loyihani klon qilish
 
-Deploy yo'li — `/srv/suv24` (xohlagan joy bo'lishi mumkin, lekin nginx config shu yo'l bilan
+Deploy yo'li — `/home/projects/suv24.uz` (xohlagan joy bo'lishi mumkin, lekin nginx config shu yo'l bilan
 yozilgan. Boshqa yo'l qilsangiz, nginx `root` direktivasini ham yangilang).
 
 ```bash
-sudo mkdir -p /srv
-sudo chown $USER:$USER /srv
-cd /srv
-git clone https://github.com/AsliddinWeb/suv24.uz.git suv24
-cd suv24
+sudo mkdir -p /home/projects
+sudo chown $USER:$USER /home/projects
+cd /home/projects
+git clone https://github.com/AsliddinWeb/suv24.uz.git suv24.uz
+cd suv24.uz
 ```
 
 ## 4. Production `.env`
@@ -108,10 +108,10 @@ chmod 600 .env
 Serverda:
 
 ```bash
-cd /srv/suv24/admin
+cd /home/projects/suv24.uz/admin
 npm ci
 npm run build
-# Natija: /srv/suv24/admin/dist/ — nginx shu yerdan xizmat qiladi
+# Natija: /home/projects/suv24.uz/admin/dist/ — nginx shu yerdan xizmat qiladi
 ls dist/   # index.html, assets/, favicon.ico
 cd ..
 ```
@@ -121,7 +121,7 @@ Har yangilanishdan keyin shu qadamni qaytaring.
 ## 6. Docker konteynerlarni ishga tushirish
 
 ```bash
-cd /srv/suv24
+cd /home/projects/suv24.uz
 
 # Imidjni qurish va backend + postgres + redis'ni ko'tarish
 docker compose -f docker-compose.yml -f docker-compose.prod.yml build
@@ -159,7 +159,7 @@ Config'da faqat HTTP (port 80) bor — certbot ishga tushgach, SSL direktivalari
 
 ```bash
 # Config nusxasini nginx'ga o'rnatish
-sudo cp /srv/suv24/nginx/suv24.uz.conf /etc/nginx/sites-available/suv24.uz.conf
+sudo cp /home/projects/suv24.uz/nginx/suv24.uz.conf /etc/nginx/sites-available/suv24.uz.conf
 
 # Agar BACKEND_HOST_PORT 8017 dan boshqa bo'lsa — config'da ham o'zgartiring
 # sudo sed -i 's|127.0.0.1:8017|127.0.0.1:8027|g' /etc/nginx/sites-available/suv24.uz.conf
@@ -256,7 +256,7 @@ docker run --rm -v water_delivery_wdms_media:/data -v /var/backups/suv24:/backup
 ## 12. Yangilash (CI yoki qo'lda)
 
 ```bash
-cd /srv/suv24
+cd /home/projects/suv24.uz
 git pull origin main
 
 # Frontend
