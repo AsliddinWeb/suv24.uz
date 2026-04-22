@@ -16,8 +16,6 @@ class Settings(BaseSettings):
     APP_NAME: str = "Suv24"
     APP_ENV: Literal["development", "staging", "production"] = "development"
     APP_DEBUG: bool = True
-    APP_HOST: str = "0.0.0.0"
-    APP_PORT: int = 8000
     APP_TIMEZONE: str = "Asia/Tashkent"
 
     POSTGRES_USER: str = "wdms"

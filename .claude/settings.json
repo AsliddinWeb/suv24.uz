@@ -99,7 +99,8 @@
       "Bash(git push *)",
       "Bash(git commit -m 'chore\\(deploy\\): simpler nginx config, let certbot --nginx add SSL automatically *)",
       "Bash(grep -n \"/srv/suv24\\\\|cd suv24$\\\\|clone.*suv24\" nginx/suv24.uz.conf deploy.md)",
-      "Bash(git commit -m 'chore\\(deploy\\): use /home/projects/suv24.uz as canonical deploy path *)"
+      "Bash(git commit -m 'chore\\(deploy\\): use /home/projects/suv24.uz as canonical deploy path *)",
+      "Bash(git commit -m 'chore: remove unused APP_HOST/APP_PORT config vars *)"
     ],
     "additionalDirectories": [
       "/Users/a1234/Desktop/Live/water_delivery/admin/public"
