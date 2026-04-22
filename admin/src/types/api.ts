@@ -1,10 +1,15 @@
 export type UUID = string;
 
-export type UserRole = "super_admin" | "admin" | "operator" | "driver";
+export type UserRole =
+  | "platform_owner"
+  | "super_admin"
+  | "admin"
+  | "operator"
+  | "driver";
 
 export interface UserOut {
   id: UUID;
-  company_id: UUID;
+  company_id: UUID | null;
   phone: string;
   full_name: string;
   role: UserRole;

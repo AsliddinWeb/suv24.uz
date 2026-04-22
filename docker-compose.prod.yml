@@ -1,17 +1,16 @@
 # Production override. Usage:
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 #
-# Key differences vs dev compose:
-#   - All host ports bound to 127.0.0.1 (only accessible via host nginx)
-#   - Postgres/Redis have NO host ports (internal network only)
-#   - Backend has no source code volume mount; uses image contents
-#   - Backend runs without --reload; production-grade worker count
-#   - Media volume persisted on host for backup
+# What this adds/changes vs dev compose:
+#   - Admin service: builds Vue SPA + serves via internal nginx + proxies /api /media to backend
+#   - Postgres/Redis: no host ports (internal docker network only)
+#   - Backend: no source volume mount; no --reload; multiple uvicorn workers
+#   - All host-facing ports bound to 127.0.0.1 — host nginx proxies public traffic
 
 services:
   postgres:
     restart: always
-    # Drop host port exposure in production — backend reaches postgres via docker network
+    # Drop host port — backend reaches postgres via docker network only
     ports: !reset []
 
   redis:
@@ -20,14 +19,12 @@ services:
 
   backend:
     restart: always
-    # Bind ONLY to localhost — nginx on the host proxies requests in.
-    # Change the first "8017" if another project on the server already uses it.
+    # Bind ONLY to localhost. If 8017 is taken by another project, set BACKEND_HOST_PORT.
     ports:
       - "127.0.0.1:${BACKEND_HOST_PORT:-8017}:8000"
-    # Remove the dev bind-mount so the container uses the built image
+    # No dev bind-mount — use image contents. Media persisted on named volume.
     volumes: !override
       - wdms_media:/app/media
-    # No --reload in production; run migrations then serve
     command: >
       sh -c "alembic upgrade head &&
              uvicorn app.main:app
@@ -36,6 +33,20 @@ services:
                  --workers ${UVICORN_WORKERS:-3}
                  --proxy-headers
                  --forwarded-allow-ips=*"
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: wdms_admin
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+    # Host nginx forwards public traffic to this port.
+    # If 8020 is taken, set ADMIN_HOST_PORT in .env.
+    ports:
+      - "127.0.0.1:${ADMIN_HOST_PORT:-8020}:80"
 
 volumes:
   wdms_media:

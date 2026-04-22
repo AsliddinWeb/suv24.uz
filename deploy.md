@@ -52,15 +52,10 @@ sudo usermod -aG docker $USER
 sudo apt update
 sudo apt install -y nginx certbot python3-certbot-nginx
 
-# Node (admin build uchun — LTS)
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -
-sudo apt install -y nodejs
-
-# Cheklovlarni tekshirish
+# Cheklovlarni tekshirish (Node serverda kerak emas — admin container ichida build bo'ladi)
 docker --version        # >= 24
 docker compose version  # >= 2.24
 nginx -v
-node --version          # >= 20
 ```
 
 ## 3. Loyihani klon qilish
@@ -103,56 +98,50 @@ nano .env
 chmod 600 .env
 ```
 
-## 5. Admin frontendni qurish
+## 5. Bitta komanda bilan ishga tushirish
 
-Serverda:
-
-```bash
-cd /home/projects/suv24.uz/admin
-npm ci
-npm run build
-# Natija: /home/projects/suv24.uz/admin/dist/ — nginx shu yerdan xizmat qiladi
-ls dist/   # index.html, assets/, favicon.ico
-cd ..
-```
-
-Har yangilanishdan keyin shu qadamni qaytaring.
-
-## 6. Docker konteynerlarni ishga tushirish
+Server'da `nodejs` o'rnatish ham kerak emas — admin frontend **container ichida quriladi**.
 
 ```bash
 cd /home/projects/suv24.uz
 
-# Imidjni qurish va backend + postgres + redis'ni ko'tarish
-docker compose -f docker-compose.yml -f docker-compose.prod.yml build
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Hamma narsa: backend imidj + admin (node build + nginx) + postgres + redis
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 # Holat
 docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+# wdms_postgres   healthy
+# wdms_redis      healthy
+# wdms_backend    healthy
+# wdms_admin      healthy
 
 # Loglar
 docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f backend
 ```
 
-Migration'lar avtomat qo'llanadi (`alembic upgrade head` backend startida).
+Avtomatik bajariladigan ishlar:
+- Backend imidj quriladi, alembic migration'lar qo'llanadi, uvicorn 3 worker'da ishga tushadi
+- Admin container node:20'da Vue SPA'ni build qiladi, nginx:alpine bilan xizmat qiladi
+- `/api/` va `/media/` admin container'ning ichidan backend'ga proxy bo'ladi
+- Postgres/redis portlar faqat docker tarmoqda, hostga chiqmaydi
 
-**Seed (birinchi ishga tushirish uchun):**
+**Seed (birinchi ishga tushirish):**
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml \
   exec backend python -m app.cli.seed
 ```
 
-Bu sizga `.env`'da yozilgan owner va demo admin foydalanuvchilarini yaratadi.
+Bu `.env`'da yozilgan owner va demo admin foydalanuvchilarini yaratadi.
 
-**Lokal tekshiruv** (hali nginx yo'q):
+**Lokal tekshiruv** (host nginx hali yo'q):
 
 ```bash
-curl -s http://127.0.0.1:8017/health
-# {"status":"ok"}
+curl -s http://127.0.0.1:8020/        # admin SPA HTML
+curl -s http://127.0.0.1:8020/api/v1/health   # {"status":"ok"}
 ```
 
-## 7. Nginx config + SSL
+## 6. Nginx config + SSL
 
 Config'da faqat HTTP (port 80) bor — certbot ishga tushgach, SSL direktivalarini
 (listen 443, ssl_certificate, HTTP→HTTPS redirect) avtomat qo'shadi.
@@ -161,8 +150,8 @@ Config'da faqat HTTP (port 80) bor — certbot ishga tushgach, SSL direktivalari
 # Config nusxasini nginx'ga o'rnatish
 sudo cp /home/projects/suv24.uz/nginx/suv24.uz.conf /etc/nginx/sites-available/suv24.uz.conf
 
-# Agar BACKEND_HOST_PORT 8017 dan boshqa bo'lsa — config'da ham o'zgartiring
-# sudo sed -i 's|127.0.0.1:8017|127.0.0.1:8027|g' /etc/nginx/sites-available/suv24.uz.conf
+# Agar ADMIN_HOST_PORT 8020 dan boshqa bo'lsa — config'da ham o'zgartiring
+# sudo sed -i 's|127.0.0.1:8020|127.0.0.1:9020|g' /etc/nginx/sites-available/suv24.uz.conf
 
 # Enable
 sudo ln -s /etc/nginx/sites-available/suv24.uz.conf /etc/nginx/sites-enabled/
@@ -191,7 +180,7 @@ Natijani ko'rish:
 sudo cat /etc/nginx/sites-available/suv24.uz.conf
 ```
 
-## 8. Tekshirish
+## 7. Tekshirish
 
 ```bash
 # HTTPS ishlashi kerak
@@ -207,7 +196,7 @@ curl -s https://suv24.uz/api/v1/health   # {"status":"ok"} yoki 404
 
 SSL sifati: https://www.ssllabs.com/ssltest/analyze.html?d=suv24.uz — A yoki A+ bo'lishi kerak.
 
-## 9. SSL avtomatik yangilanishi
+## 8. SSL avtomatik yangilanishi
 
 Certbot o'rnatishda sistemd timer ham o'rnatadi — tekshiring:
 
@@ -218,7 +207,7 @@ sudo certbot renew --dry-run
 
 Har 90 kunda avtomat yangilaydi.
 
-## 10. Driver ilova
+## 9. Driver ilova
 
 `driver/.env` serverda kerak emas — bu mobil ilova, telefonda ishlaydi. `EXPO_PUBLIC_API_URL`'ni
 production bilan qurganingizda (EAS Build) `https://suv24.uz/api/v1` ga yo'naltiring:
@@ -229,7 +218,7 @@ cd driver
 EXPO_PUBLIC_API_URL=https://suv24.uz/api/v1 eas build --platform ios --profile production
 ```
 
-## 11. Backup
+## 10. Backup
 
 **Postgres dumpni har kuni:**
 
@@ -253,36 +242,31 @@ docker run --rm -v water_delivery_wdms_media:/data -v /var/backups/suv24:/backup
   tar czf /backup/media-$(date +%Y%m%d).tar.gz -C /data .
 ```
 
-## 12. Yangilash (CI yoki qo'lda)
+## 11. Yangilash
 
 ```bash
 cd /home/projects/suv24.uz
 git pull origin main
 
-# Frontend
-cd admin && npm ci && npm run build && cd ..
+# Bitta komanda: yangi kodlar bilan backend + admin qayta quriladi va ko'tariladi
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
-# Backend (migration + restart)
-docker compose -f docker-compose.yml -f docker-compose.prod.yml build backend
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d backend
-
-# Nginx kerak emas agar config o'zgarmagan bo'lsa
 # Agar nginx config o'zgartirgan bo'lsangiz:
 sudo cp nginx/suv24.uz.conf /etc/nginx/sites-available/suv24.uz.conf
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Zero-downtime deploy uchun `backend` uchun `up -d --no-deps backend` ishlaydi — eski
-konteyner bitgach yangisi o'rniga keladi.
+Zero-downtime deploy uchun alohida servis yangilash: `up -d --no-deps --build admin`
+yoki `--build backend` — eski konteyner bitgach yangisi o'rniga keladi.
 
-## 13. Monitoring
+## 12. Monitoring
 
 - **Loglar**: `docker compose logs -f backend` — real-time
 - **Sentry**: `.env`'da `SENTRY_DSN` to'ldirsangiz, exception'lar avtomat yuboriladi
 - **Holat tekshiruvi**: `/health` va `/ready` endpoint'lari
 - **Resurs**: `docker stats` — CPU/RAM har konteyner uchun
 
-## 14. Muammolarni bartaraf qilish
+## 13. Muammolarni bartaraf qilish
 
 **Backend 502 xato beradi**
 
@@ -322,7 +306,7 @@ tekshiring, backend'ni qayta ishga tushiring.
 - Docker named volume `wdms_media` mount qilinganligini tekshiring:
   `docker inspect wdms_backend | grep -A 3 media`
 
-## 15. Birinchi kirish
+## 14. Birinchi kirish
 
 1. https://suv24.uz/login
 2. `.env`'dagi `SEED_OWNER_PHONE` va `SEED_OWNER_PASSWORD` bilan kiring
