@@ -459,9 +459,9 @@ onMounted(() => {
             </div>
             <p class="mt-3 text-sm text-brand-50">O'rta biznes — cheksiz haydovchi va mijoz.</p>
             <div class="mt-6 text-white">
-              <span class="text-5xl font-extrabold tracking-tight">{{ period === 'monthly' ? '249 000' : '2 490 000' }}</span>
+              <span class="text-5xl font-extrabold tracking-tight">{{ period === 'monthly' ? '199 000' : '1 990 000' }}</span>
               <span class="text-brand-100 ml-1 text-sm">so'm/{{ period === 'monthly' ? 'oy' : 'yil' }}</span>
-              <p v-if="period === 'yearly'" class="text-xs text-amber-300 font-semibold mt-1">~500k tejash</p>
+              <p v-if="period === 'yearly'" class="text-xs text-amber-300 font-semibold mt-1">2 oy tekinga · ~400k tejash</p>
             </div>
             <ul class="mt-6 space-y-3 text-sm text-brand-50 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong class="text-white">Cheksiz haydovchi · mijoz · buyurtma</strong></li>
@@ -486,9 +486,9 @@ onMounted(() => {
             </div>
             <p class="mt-3 text-sm text-slate-400">Tarmoqlar va yirik kompaniyalar.</p>
             <div class="mt-6">
-              <span class="text-5xl font-extrabold tracking-tight">{{ period === 'monthly' ? '499 000' : '4 990 000' }}</span>
+              <span class="text-5xl font-extrabold tracking-tight">{{ period === 'monthly' ? '399 000' : '3 990 000' }}</span>
               <span class="text-slate-400 ml-1 text-sm">so'm/{{ period === 'monthly' ? 'oy' : 'yil' }}</span>
-              <p v-if="period === 'yearly'" class="text-xs text-emerald-400 font-semibold mt-1">~1M tejash</p>
+              <p v-if="period === 'yearly'" class="text-xs text-emerald-400 font-semibold mt-1">2 oy tekinga · ~800k tejash</p>
             </div>
             <ul class="mt-6 space-y-3 text-sm text-slate-300 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong class="text-white">Biznes'dagi hammasi +</strong></li>
@@ -524,28 +524,45 @@ onMounted(() => {
           ming-minglab so'm tejang va biznesingizni bemalol boshqaring.
         </p>
 
-        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 p-8 text-left hover:bg-white/10 transition-colors">
-            <p class="text-xs text-slate-400 uppercase tracking-wider">Start Lifetime</p>
-            <p class="mt-2 text-4xl font-extrabold">4 470 000 <span class="text-base text-slate-400 font-normal">so'm</span></p>
-            <p class="mt-1 text-xs text-emerald-400 font-semibold">~15 oyda o'zini oqlaydi</p>
-            <p class="mt-4 text-sm text-slate-300">3 gacha haydovchi. Kichik kiosk va kafelar uchun.</p>
-            <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <!-- Biznes Lifetime -->
+          <div class="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 p-8 text-left flex flex-col hover:bg-white/10 transition-colors">
+            <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Biznes Lifetime</p>
+            <p class="mt-2 text-4xl font-extrabold">7 990 000 <span class="text-base text-slate-400 font-normal">so'm</span></p>
+            <p class="mt-1 text-xs text-emerald-400 font-semibold">~40 oyda o'zini oqlaydi (199k/oy'ga nisbatan)</p>
+            <p class="mt-4 text-sm text-slate-300">O'rta biznes — cheksiz haydovchi va mijoz.</p>
+            <ul class="mt-6 space-y-2.5 text-sm text-slate-200 flex-1">
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong>Cheksiz haydovchi · mijoz · buyurtma</strong></li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Haydovchi ilovasi (iOS + Android)</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Yandex marshrut · Naqd + karta</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Ko'p operator · kompaniya brendi</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Mijoz qarzlari va segmentatsiya</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Dashboard va hisobotlar</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Audit log · buyurtma tarixi</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Prioritet qo'llab-quvvatlash</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Payme onlayn (yaqinda)</li>
+            </ul>
+            <button @click="openDemo" class="mt-8 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
           </div>
-          <div class="relative rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 p-8 text-left text-slate-900 shadow-2xl shadow-amber-500/40 lg:scale-105">
+
+          <!-- Premium Lifetime -->
+          <div class="relative rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 p-8 text-left text-slate-900 shadow-2xl shadow-amber-500/40 flex flex-col lg:scale-105">
             <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-amber-400 px-4 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider">🔥 Eng foydali</div>
-            <p class="text-xs font-bold uppercase tracking-wider">Biznes Lifetime</p>
-            <p class="mt-2 text-4xl font-extrabold">11 970 000 <span class="text-base font-semibold">so'm</span></p>
-            <p class="mt-1 text-xs font-bold">~16 oyda o'zini oqlaydi</p>
-            <p class="mt-4 text-sm font-medium">Cheksiz haydovchi va mijoz. O'rta biznes uchun barcha imkoniyatlar — abadiy.</p>
-            <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 transition-colors shadow-md">Hoziroq sotib olish</button>
-          </div>
-          <div class="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 p-8 text-left hover:bg-white/10 transition-colors">
-            <p class="text-xs text-slate-400 uppercase tracking-wider">Premium Lifetime</p>
-            <p class="mt-2 text-4xl font-extrabold">23 970 000 <span class="text-base text-slate-400 font-normal">so'm</span></p>
-            <p class="mt-1 text-xs text-emerald-400 font-semibold">~16 oyda o'zini oqlaydi</p>
-            <p class="mt-4 text-sm text-slate-300">Shaxsiy menejer, SLA, kastom integratsiya. Tarmoqlar uchun.</p>
-            <button @click="openDemo" class="mt-6 block w-full text-center rounded-xl bg-white/10 hover:bg-white/20 font-semibold px-6 py-3 transition-colors border border-white/20">Tanlash</button>
+            <p class="text-xs font-bold uppercase tracking-wider">Premium Lifetime</p>
+            <p class="mt-2 text-4xl font-extrabold">12 990 000 <span class="text-base font-semibold">so'm</span></p>
+            <p class="mt-1 text-xs font-bold">~33 oyda o'zini oqlaydi (399k/oy'ga nisbatan)</p>
+            <p class="mt-4 text-sm font-medium">Tarmoqlar va ko'p filialli kompaniyalar uchun.</p>
+            <ul class="mt-6 space-y-2.5 text-sm text-slate-900 flex-1">
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong>Biznes'dagi hamma narsa +</strong></li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong>Ko'p filial</strong> — har filial alohida</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Shaxsiy menejer · onboarding</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Shaxsiy trening (offline)</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Kastom hisobot so'rov bo'yicha</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Shaxsiy domen (siz tanlang)</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>24/7 prioritet + SLA</li>
+              <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Payme + kastom integratsiyalar</li>
+            </ul>
+            <button @click="openDemo" class="mt-8 block w-full text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 transition-colors shadow-md">Hoziroq sotib olish</button>
           </div>
         </div>
 
