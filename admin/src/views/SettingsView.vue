@@ -8,12 +8,19 @@ import {
   PhotoIcon,
   ArrowUpTrayIcon,
   XMarkIcon,
+  SparklesIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
-import { companiesApi, resolveMediaUrl, type CompanyUpdate } from "@/api/companies";
+import {
+  companiesApi,
+  resolveMediaUrl,
+  type CompanyUpdate,
+  type TariffUsage,
+} from "@/api/companies";
 import { toast } from "@/lib/toast";
 import PageHeader from "@/components/ui/PageHeader.vue";
+import dayjs from "dayjs";
 
 const auth = useAuthStore();
 const theme = useThemeStore();
@@ -23,6 +30,7 @@ const loadingCompany = ref(false);
 const saving = ref(false);
 const uploading = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
+const usage = ref<TariffUsage | null>(null);
 
 const form = reactive({
   name: "",
@@ -43,10 +51,21 @@ function hydrateForm() {
   form.address = c?.address ?? "";
 }
 
+function pct(used: number, limit: number | null): number {
+  if (limit == null) return 0;
+  return Math.min(100, Math.round((used / limit) * 100));
+}
+function progressColor(p: number): string {
+  if (p >= 90) return "bg-rose-500";
+  if (p >= 70) return "bg-amber-500";
+  return "bg-emerald-500";
+}
+
 onMounted(async () => {
   loadingCompany.value = true;
   try {
     await auth.loadCompany();
+    companiesApi.usage().then((u) => (usage.value = u)).catch(() => undefined);
   } catch {
     // ignore
   } finally {
@@ -241,6 +260,89 @@ async function removeLogo() {
           <p v-else class="text-xs text-slate-500">Tahrirlash uchun admin huquqi kerak</p>
         </div>
       </form>
+    </div>
+
+    <!-- Tariff usage -->
+    <div v-if="usage" class="card p-6">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600">
+          <SparklesIcon class="h-5 w-5" />
+        </div>
+        <div class="flex-1">
+          <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
+            Tarif: {{ usage.tariff_label }}
+          </h3>
+          <p v-if="usage.trial_ends_at && usage.tariff_plan === 'trial'" class="text-sm text-amber-600 mt-0.5">
+            Sinov tugaydi: {{ dayjs(usage.trial_ends_at).format("DD.MM.YYYY") }}
+          </p>
+          <p v-else class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            Joriy foydalanish va chegaralar
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- Drivers -->
+        <div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Haydovchilar</span>
+            <span class="text-sm font-bold text-slate-900 dark:text-slate-100">
+              {{ usage.drivers.used }}<span class="text-slate-400 font-normal">{{ usage.drivers.limit != null ? ` / ${usage.drivers.limit}` : '' }}</span>
+            </span>
+          </div>
+          <div class="mt-1.5 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div
+              v-if="usage.drivers.limit != null"
+              :class="['h-full transition-all', progressColor(pct(usage.drivers.used, usage.drivers.limit))]"
+              :style="{ width: pct(usage.drivers.used, usage.drivers.limit) + '%' }"
+            />
+            <div v-else class="h-full bg-emerald-500 w-full opacity-50" />
+          </div>
+          <p v-if="usage.drivers.limit == null" class="text-[10px] text-emerald-600 mt-1">Cheksiz</p>
+        </div>
+
+        <!-- Customers -->
+        <div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Mijozlar</span>
+            <span class="text-sm font-bold text-slate-900 dark:text-slate-100">
+              {{ usage.customers.used }}<span class="text-slate-400 font-normal">{{ usage.customers.limit != null ? ` / ${usage.customers.limit}` : '' }}</span>
+            </span>
+          </div>
+          <div class="mt-1.5 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div
+              v-if="usage.customers.limit != null"
+              :class="['h-full transition-all', progressColor(pct(usage.customers.used, usage.customers.limit))]"
+              :style="{ width: pct(usage.customers.used, usage.customers.limit) + '%' }"
+            />
+            <div v-else class="h-full bg-emerald-500 w-full opacity-50" />
+          </div>
+          <p v-if="usage.customers.limit == null" class="text-[10px] text-emerald-600 mt-1">Cheksiz</p>
+        </div>
+
+        <!-- Orders this month -->
+        <div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Bu oy buyurtma</span>
+            <span class="text-sm font-bold text-slate-900 dark:text-slate-100">
+              {{ usage.orders_this_month.used }}<span class="text-slate-400 font-normal">{{ usage.orders_this_month.limit != null ? ` / ${usage.orders_this_month.limit}` : '' }}</span>
+            </span>
+          </div>
+          <div class="mt-1.5 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div
+              v-if="usage.orders_this_month.limit != null"
+              :class="['h-full transition-all', progressColor(pct(usage.orders_this_month.used, usage.orders_this_month.limit))]"
+              :style="{ width: pct(usage.orders_this_month.used, usage.orders_this_month.limit) + '%' }"
+            />
+            <div v-else class="h-full bg-emerald-500 w-full opacity-50" />
+          </div>
+          <p v-if="usage.orders_this_month.limit == null" class="text-[10px] text-emerald-600 mt-1">Cheksiz</p>
+        </div>
+      </div>
+
+      <p v-if="usage.tariff_plan === 'trial' || usage.tariff_plan === 'start'" class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+        Chegaraga yetganda yangi haydovchi/mijoz/buyurtma qo'sha olmaysiz. Yuqori tarif tanlash uchun adminga murojaat qiling.
+      </p>
     </div>
 
     <!-- Account -->

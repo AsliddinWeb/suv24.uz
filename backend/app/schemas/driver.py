@@ -22,6 +22,11 @@ class DriverUpdate(BaseModel):
     is_active: bool | None = None
 
 
+class DriverLocationUpdate(BaseModel):
+    lat: Decimal = Field(ge=-90, le=90)
+    lng: Decimal = Field(ge=-180, le=180)
+
+
 class DriverOut(ORMModel):
     id: UUID
     company_id: UUID

@@ -22,8 +22,18 @@ export interface CompanyUpdate {
   logo_url?: string | null;
 }
 
+export interface TariffUsage {
+  tariff_plan: "trial" | "start" | "biznes" | "premium";
+  tariff_label: string;
+  drivers: { used: number; limit: number | null };
+  customers: { used: number; limit: number | null };
+  orders_this_month: { used: number; limit: number | null };
+  trial_ends_at: string | null;
+}
+
 export const companiesApi = {
   me: () => http.get<CompanyOut>("/companies/me").then((r) => r.data),
+  usage: () => http.get<TariffUsage>("/companies/me/usage").then((r) => r.data),
   update: (body: CompanyUpdate) =>
     http.patch<CompanyOut>("/companies/me", body).then((r) => r.data),
   uploadLogo: (file: File) => {

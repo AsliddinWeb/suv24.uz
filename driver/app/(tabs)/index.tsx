@@ -7,6 +7,7 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "@react-navigation/native";
@@ -15,9 +16,11 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { ordersApi } from "@/api/orders";
+import { useAuth } from "@/stores/auth";
 import { useTheme } from "@/stores/theme";
 import { orderStatusColor, orderStatusLabel, type ColorsScheme } from "@/theme/colors";
 import { formatMoney, formatTime } from "@/utils/format";
+import { useDriverLocation, haversineKm } from "@/hooks/useDriverLocation";
 import type { OrderOut, OrderStatus } from "@/types/api";
 
 const FILTERS: { label: string; value: OrderStatus | null }[] = [
@@ -27,6 +30,11 @@ const FILTERS: { label: string; value: OrderStatus | null }[] = [
   { label: "Yetkazildi", value: "delivered" },
 ];
 
+function formatDistance(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(km < 10 ? 1 : 0)} km`;
+}
+
 export default function OrdersListScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -35,6 +43,11 @@ export default function OrdersListScreen() {
   const [pulling, setPulling] = useState(false);
   const seenIdsRef = useRef<Set<string>>(new Set());
   const firstLoadRef = useRef(true);
+
+  const { user } = useAuth();
+  const isDriver = user?.role === "driver";
+  // Track GPS in foreground; pings backend every 30s while driver is logged in
+  const { coords: driverCoords } = useDriverLocation({ enabled: isDriver });
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["orders", filter],
@@ -48,7 +61,63 @@ export default function OrdersListScreen() {
     }, [refetch]),
   );
 
-  const items = data?.items ?? [];
+  const rawItems = data?.items ?? [];
+
+  // Compute distance for each order from driver's current position; sort active
+  // (assigned/in_delivery) orders nearest-first so the driver knows where to go next.
+  const items = useMemo(() => {
+    if (!driverCoords) return rawItems;
+    const ACTIVE = new Set<OrderStatus>(["assigned", "in_delivery", "pending"]);
+
+    type Decorated = OrderOut & { _km?: number };
+    const decorated: Decorated[] = rawItems.map((o) => {
+      const lat = o.address?.lat ? Number(o.address.lat) : null;
+      const lng = o.address?.lng ? Number(o.address.lng) : null;
+      const km =
+        lat != null && lng != null
+          ? haversineKm(driverCoords, { lat, lng })
+          : undefined;
+      return { ...o, _km: km };
+    });
+
+    return decorated.sort((a, b) => {
+      const aActive = ACTIVE.has(a.status);
+      const bActive = ACTIVE.has(b.status);
+      if (aActive !== bActive) return aActive ? -1 : 1;
+      // Within active: nearest first (orders without coords go to bottom)
+      if (aActive && bActive) {
+        if (a._km == null && b._km == null) return 0;
+        if (a._km == null) return 1;
+        if (b._km == null) return -1;
+        return a._km - b._km;
+      }
+      return 0;
+    });
+  }, [rawItems, driverCoords]);
+
+  const activeWithCoords = useMemo(
+    () =>
+      items.filter(
+        (o) =>
+          (o.status === "assigned" || o.status === "in_delivery" || o.status === "pending") &&
+          o.address?.lat &&
+          o.address?.lng,
+      ),
+    [items],
+  );
+
+  function openMultiStopRoute() {
+    if (!activeWithCoords.length || !driverCoords) return;
+    Haptics.selectionAsync();
+    // Yandex multi-stop: rtext=lat,lng~lat,lng~... Start with driver's current location.
+    const points = [
+      `${driverCoords.lat},${driverCoords.lng}`,
+      ...activeWithCoords.map((o) => `${o.address!.lat},${o.address!.lng}`),
+    ].join("~");
+    const yandexApp = `yandexmaps://maps.yandex.ru/?rtext=${points}&rtt=auto`;
+    const yandexWeb = `https://yandex.uz/maps/?rtext=${points}&rtt=auto`;
+    Linking.openURL(yandexApp).catch(() => Linking.openURL(yandexWeb));
+  }
 
   const { assignedCount, inDeliveryCount, deliveredCount } = useMemo(() => {
     return {
@@ -146,6 +215,19 @@ export default function OrdersListScreen() {
         />
       </View>
 
+      {activeWithCoords.length >= 2 && driverCoords && (
+        <Pressable onPress={openMultiStopRoute} style={styles.routeBtn}>
+          <Ionicons name="navigate" size={18} color="#fff" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.routeBtnText}>Marshrutni xaritada ko'rish</Text>
+            <Text style={styles.routeBtnSub}>
+              {activeWithCoords.length} ta nuqta · eng yaqindan boshlab
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#fff" />
+        </Pressable>
+      )}
+
       {isLoading && items.length === 0 ? (
         <View style={styles.loading}>
           <ActivityIndicator size="large" color={colors.brand} />
@@ -176,6 +258,12 @@ export default function OrdersListScreen() {
               order={item}
               isNew={newIds.has(item.id)}
               index={index}
+              distanceKm={(item as OrderOut & { _km?: number })._km}
+              orderIndex={
+                activeWithCoords.findIndex((o) => o.id === item.id) >= 0
+                  ? activeWithCoords.findIndex((o) => o.id === item.id) + 1
+                  : null
+              }
               colors={colors}
               styles={styles}
             />
@@ -217,12 +305,16 @@ function OrderCard({
   order,
   isNew,
   index,
+  distanceKm,
+  orderIndex,
   colors,
   styles,
 }: {
   order: OrderOut;
   isNew: boolean;
   index: number;
+  distanceKm?: number;
+  orderIndex: number | null;
   colors: ColorsScheme;
   styles: ReturnType<typeof makeStyles>;
 }) {
@@ -252,6 +344,11 @@ function OrderCard({
 
       <View style={styles.cardTop}>
         <View style={styles.cardLeft}>
+          {orderIndex != null && (
+            <View style={styles.stopBadge}>
+              <Text style={styles.stopBadgeText}>{orderIndex}</Text>
+            </View>
+          )}
           <Text style={styles.orderNumber}>#{order.number}</Text>
           <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
             <Text style={styles.statusBadgeText}>{orderStatusLabel[order.status]}</Text>
@@ -282,6 +379,11 @@ function OrderCard({
           <Text style={styles.addressText} numberOfLines={1}>
             {order.address.address_text}
           </Text>
+          {distanceKm != null && (
+            <View style={styles.distancePill}>
+              <Text style={styles.distanceText}>{formatDistance(distanceKm)}</Text>
+            </View>
+          )}
           {order.address.lat && order.address.lng && (
             <Ionicons name="navigate-circle" size={16} color={colors.brand} />
           )}
@@ -366,6 +468,44 @@ const makeStyles = (c: ColorsScheme) =>
     chipActive: { backgroundColor: c.brand, borderColor: c.brand },
     chipText: { fontSize: 13, fontWeight: "600", color: c.textMuted },
     chipTextActive: { color: "#fff" },
+    routeBtn: {
+      marginHorizontal: 16,
+      marginTop: 12,
+      backgroundColor: c.brand,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 14,
+      shadowColor: c.brand,
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 4,
+    },
+    routeBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+    routeBtnSub: { color: "rgba(255,255,255,0.85)", fontSize: 11, marginTop: 2 },
+    stopBadge: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: c.brand,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    stopBadgeText: { color: "#fff", fontSize: 11, fontWeight: "800" },
+    distancePill: {
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 8,
+      backgroundColor: c.brandSoft,
+    },
+    distanceText: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: c.brand,
+    },
     loading: { flex: 1, alignItems: "center", justifyContent: "center" },
     card: {
       backgroundColor: c.card,

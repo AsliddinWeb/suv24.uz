@@ -7,12 +7,19 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.deps import CurrentUser, DbDep, require_roles
 from app.core.security import hash_password
+from app.core.tariff import EnforceDrivers
 from app.models.driver import Driver
 from app.models.user import User, UserRole
 from app.repositories.driver import DriverRepository
 from app.repositories.user import UserRepository
 from app.schemas.common import OkResponse
-from app.schemas.driver import DriverCreate, DriverOut, DriverUpdate, DriverWithUserOut
+from app.schemas.driver import (
+    DriverCreate,
+    DriverLocationUpdate,
+    DriverOut,
+    DriverUpdate,
+    DriverWithUserOut,
+)
 
 router = APIRouter(prefix="/drivers", tags=["drivers"])
 
@@ -61,11 +68,30 @@ async def get_me(user: CurrentUser, db: DbDep) -> DriverWithUserOut:
     return _with_user(driver)
 
 
+@router.patch("/me/location", response_model=DriverWithUserOut)
+async def report_my_location(
+    payload: DriverLocationUpdate, user: CurrentUser, db: DbDep
+) -> DriverWithUserOut:
+    """Driver app pings this every ~30s to report position. Returns the fresh driver row."""
+    if user.role != UserRole.DRIVER:
+        raise HTTPException(status_code=403, detail="Driver account required")
+    driver = await DriverRepository(db).get_by_user_id(user.company_id, user.id)
+    if driver is None:
+        raise HTTPException(status_code=404, detail="Driver profile not found")
+    driver.current_lat = payload.lat
+    driver.current_lng = payload.lng
+    driver.last_seen_at = datetime.now(tz=timezone.utc)
+    await db.commit()
+    await db.refresh(driver)
+    return _with_user(driver)
+
+
 @router.post("", response_model=DriverWithUserOut, status_code=status.HTTP_201_CREATED)
 async def create_driver(
     payload: DriverCreate,
     user: AdminUser,
     db: DbDep,
+    _: EnforceDrivers = None,
 ) -> DriverWithUserOut:
     """Create a new driver: provisions a User(role=driver) and Driver profile in one step."""
     users = UserRepository(db)

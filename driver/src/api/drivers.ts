@@ -14,4 +14,8 @@ export const driversApi = {
   me: () => http.get<DriverMe>("/drivers/me").then((r) => r.data),
   myBottles: (driverId: UUID) =>
     http.get<BottleBalance[]>(`/drivers/${driverId}/bottles`).then((r) => r.data),
+  reportLocation: (lat: number, lng: number) =>
+    http
+      .patch("/drivers/me/location", { lat, lng })
+      .then((r) => r.data),
 };

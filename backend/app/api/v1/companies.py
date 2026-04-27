@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.core.deps import CurrentUser, DbDep, require_roles
+from app.core.tariff import usage_with_limits
 from app.models.user import User, UserRole
 from app.repositories.company import CompanyRepository
 from app.schemas.company import CompanyOut, CompanyUpdate
@@ -26,6 +27,12 @@ EXT_FOR_TYPE = {
     "image/webp": ".webp",
     "image/svg+xml": ".svg",
 }
+
+
+@router.get("/me/usage")
+async def get_my_usage(user: CurrentUser, db: DbDep) -> dict:
+    """Tariff usage vs limits for the current company."""
+    return await usage_with_limits(user, db)
 
 
 @router.get("/me", response_model=CompanyOut)

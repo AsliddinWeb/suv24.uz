@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.deps import CurrentUser, DbDep, require_roles
+from app.core.tariff import EnforceOrders
 from app.models.driver import Driver
 from app.models.order import Order, OrderStatus
 from app.models.user import User, UserRole
@@ -133,6 +134,7 @@ async def create_order(
     payload: OrderCreate,
     user: StaffUser,
     db: DbDep,
+    _: EnforceOrders = None,
 ) -> OrderDetailOut:
     service = OrderService(db)
     order = await service.create_order(

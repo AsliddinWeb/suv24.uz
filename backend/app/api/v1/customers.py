@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.deps import DbDep, require_roles
+from app.core.tariff import EnforceCustomers
 from app.models.user import User, UserRole
 from app.schemas.address import AddressCreate, AddressOut, AddressUpdate
 from app.schemas.common import OkResponse
@@ -48,6 +49,7 @@ async def create_customer(
     payload: CustomerCreate,
     user: StaffUser,
     db: DbDep,
+    _: EnforceCustomers = None,
 ) -> CustomerOut:
     service = CustomerService(db)
     customer = await service.create_customer(user.company_id, payload)
