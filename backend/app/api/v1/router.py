@@ -5,6 +5,7 @@ from app.api.v1.companies import router as companies_router
 from app.api.v1.customers import router as customers_router
 from app.api.v1.drivers import router as drivers_router
 from app.api.v1.bottles import router as bottles_router
+from app.api.v1.cash import purchase_router as purchases_router, router as cash_router
 from app.api.v1.leads import router as leads_router
 from app.api.v1.orders import router as orders_router
 from app.api.v1.payments import router as payments_router
@@ -28,6 +29,8 @@ api_router.include_router(orders_router)
 api_router.include_router(payments_router)
 api_router.include_router(reports_router)
 api_router.include_router(warehouse_router)
+api_router.include_router(cash_router)
+api_router.include_router(purchases_router)
 
 
 @api_router.get("/ping", tags=["system"])

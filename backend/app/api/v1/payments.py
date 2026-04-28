@@ -73,12 +73,35 @@ async def record_payment(
     user: Recorder,
     db: DbDep,
 ) -> PaymentOut:
+    from decimal import Decimal as _Dec
+
+    from app.api.v1.cash import _get_or_create_account, _record
+    from app.models.cash import CashTransactionKind
+    from app.models.payment import PaymentStatus as _PS
+
     service = PaymentService(db)
     payment = await service.record_payment(
         company_id=user.company_id,
         actor_user_id=user.id,
         data=payload,
     )
+
+    # Record cash IN for paid/partial payments. Refunds are reversed elsewhere.
+    if payment.status in (_PS.PAID, _PS.PARTIAL):
+        amount = _Dec(payment.amount)
+        if amount > 0:
+            acc = await _get_or_create_account(db, user.company_id)
+            _record(
+                db,
+                account=acc,
+                kind=CashTransactionKind.CUSTOMER_PAYMENT,
+                amount=amount,
+                description=f"To'lov · #{str(payment.order_id)[:8]} · {payment.method.value}",
+                occurred_at=payment.created_at,
+                actor_user_id=user.id,
+                related_payment_id=payment.id,
+            )
+
     await db.commit()
     await db.refresh(payment)
     return PaymentOut.model_validate(payment)

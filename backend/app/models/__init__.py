@@ -1,5 +1,6 @@
 from app.models.base import Base, CompanyScopedMixin, SoftDeleteMixin, TimestampMixin
 from app.models.bottle import DriverBottleBalance
+from app.models.cash import CashAccount, CashTransaction, CashTransactionKind, InventoryPurchase
 from app.models.company import Company
 from app.models.customer import Customer, CustomerAddress, CustomerSegment
 from app.models.driver import Driver
@@ -50,4 +51,8 @@ __all__ = [
     "DriverBottleBalance",
     "WarehouseStock",
     "StockMovement",
+    "CashAccount",
+    "CashTransaction",
+    "CashTransactionKind",
+    "InventoryPurchase",
 ]
