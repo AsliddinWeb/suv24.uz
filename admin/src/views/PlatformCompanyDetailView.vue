@@ -17,6 +17,7 @@ import AppBadge from "@/components/ui/AppBadge.vue";
 import {
   platformApi,
   TARIFF_LABELS,
+  type CompanyAdminOut,
   type PlatformCompanyDetail,
   type TariffPlan,
 } from "@/api/platform";
@@ -59,6 +60,64 @@ const tariffOptions = (Object.keys(TARIFF_LABELS) as TariffPlan[]).map((k) => ({
   label: TARIFF_LABELS[k],
 }));
 
+// Super admin section
+const admins = ref<CompanyAdminOut[]>([]);
+const editingAdminId = ref<string | null>(null);
+const adminForm = reactive({
+  full_name: "",
+  phone: "",
+  password: "",
+  is_active: true,
+});
+const savingAdmin = ref(false);
+
+async function loadAdmins(companyId: string) {
+  try {
+    admins.value = await platformApi.listCompanyAdmins(companyId);
+  } catch {
+    // ignore
+  }
+}
+
+function startEditAdmin(a: CompanyAdminOut) {
+  editingAdminId.value = a.id;
+  adminForm.full_name = a.full_name;
+  adminForm.phone = a.phone;
+  adminForm.password = "";
+  adminForm.is_active = a.is_active;
+}
+
+function cancelEditAdmin() {
+  editingAdminId.value = null;
+  adminForm.password = "";
+}
+
+async function saveAdmin() {
+  if (!company.value || !editingAdminId.value) return;
+  savingAdmin.value = true;
+  try {
+    const body: any = {
+      full_name: adminForm.full_name,
+      phone: adminForm.phone,
+      is_active: adminForm.is_active,
+    };
+    if (adminForm.password.trim()) body.password = adminForm.password;
+    const updated = await platformApi.updateCompanyAdmin(
+      company.value.id,
+      editingAdminId.value,
+      body,
+    );
+    const idx = admins.value.findIndex((a) => a.id === updated.id);
+    if (idx >= 0) admins.value[idx] = updated;
+    toast.success("Super admin yangilandi");
+    cancelEditAdmin();
+  } catch (e: any) {
+    toast.error(e?.response?.data?.detail || "Saqlab bo'lmadi");
+  } finally {
+    savingAdmin.value = false;
+  }
+}
+
 async function load() {
   loading.value = true;
   try {
@@ -74,6 +133,7 @@ async function load() {
     tariff.monthly_fee = String(c.monthly_fee);
     tariff.trial_ends_at = c.trial_ends_at ? c.trial_ends_at.slice(0, 10) : "";
     tariff.is_active = c.is_active;
+    loadAdmins(c.id);
   } finally {
     loading.value = false;
   }
@@ -266,6 +326,85 @@ const stats = computed(() => {
           </button>
         </div>
       </form>
+    </div>
+
+    <!-- Super admin(s) -->
+    <div class="card p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">Super admin(lar)</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Kompaniya admin paneliga to'liq huquq bilan kira oladigan foydalanuvchilar
+          </p>
+        </div>
+      </div>
+
+      <div v-if="!admins.length" class="text-sm text-slate-500 py-4 text-center">
+        Super admin yo'q
+      </div>
+
+      <div v-else class="divide-y divide-slate-200 dark:divide-slate-800">
+        <div v-for="a in admins" :key="a.id" class="py-3 first:pt-0 last:pb-0">
+          <!-- View mode -->
+          <div v-if="editingAdminId !== a.id" class="flex items-center gap-3 flex-wrap">
+            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
+              {{ a.full_name.slice(0, 1).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                {{ a.full_name }}
+              </div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">{{ a.phone }}</div>
+            </div>
+            <AppBadge :type="a.is_active ? 'success' : 'neutral'" class="shrink-0">
+              {{ a.is_active ? 'Aktiv' : 'O\'chirilgan' }}
+            </AppBadge>
+            <button class="btn-ghost text-sm !py-1 !px-2.5" @click="startEditAdmin(a)">
+              Tahrirlash
+            </button>
+          </div>
+
+          <!-- Edit mode -->
+          <div v-else class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Ism</label>
+                <input v-model="adminForm.full_name" class="input" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Telefon</label>
+                <input v-model="adminForm.phone" type="tel" class="input" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                  Yangi parol <span class="text-slate-400 font-normal">(ixtiyoriy)</span>
+                </label>
+                <input
+                  v-model="adminForm.password"
+                  type="text"
+                  class="input"
+                  placeholder="O'zgartirmaslik uchun bo'sh qoldiring"
+                  minlength="6"
+                />
+              </div>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input v-model="adminForm.is_active" type="checkbox" class="rounded border-slate-300" />
+              <span class="text-sm text-slate-700 dark:text-slate-300">Aktiv (kira oladi)</span>
+            </label>
+            <div class="flex justify-end gap-2 pt-1">
+              <button class="btn-ghost !py-1.5 !px-3 text-sm" @click="cancelEditAdmin">Bekor</button>
+              <button
+                class="btn-primary !py-1.5 !px-3 text-sm"
+                :disabled="savingAdmin"
+                @click="saveAdmin"
+              >
+                {{ savingAdmin ? "Saqlanmoqda..." : "Saqlash" }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

@@ -5,12 +5,14 @@ from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import get_settings
 from app.core.deps import CurrentUser, DbDep
 from app.core.security import hash_password
+from app.core.tariff import tariffs_meta
 from app.models.company import Company, TariffPlan
 from app.models.customer import Customer
 from app.models.driver import Driver
@@ -317,6 +319,109 @@ async def update_company(
     await db.commit()
     await db.refresh(company)
     return PlatformCompanyOut.model_validate(company)
+
+
+@router.get("/tariffs")
+async def list_tariffs(_: PlatformOwner) -> list[dict]:
+    """Static catalog of tariff plans + their limits and features."""
+    return tariffs_meta()
+
+
+# ----- Company super-admin management -----
+
+
+class CompanyAdminOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    full_name: str
+    phone: str
+    role: UserRole
+    is_active: bool
+    created_at: datetime
+
+
+class CompanyAdminUpdate(BaseModel):
+    full_name: str | None = Field(default=None, min_length=1, max_length=255)
+    phone: str | None = Field(default=None, min_length=5, max_length=32)
+    password: str | None = Field(default=None, min_length=6, max_length=128)
+    is_active: bool | None = None
+
+
+@router.get("/companies/{company_id}/admins", response_model=list[CompanyAdminOut])
+async def list_company_admins(
+    company_id: UUID, _: PlatformOwner, db: DbDep
+) -> list[CompanyAdminOut]:
+    rows = (
+        await db.execute(
+            select(User)
+            .where(
+                User.company_id == company_id,
+                User.role == UserRole.SUPER_ADMIN,
+                User.deleted_at.is_(None),
+            )
+            .order_by(User.created_at)
+        )
+    ).scalars().all()
+    return [CompanyAdminOut.model_validate(u) for u in rows]
+
+
+@router.patch(
+    "/companies/{company_id}/admins/{user_id}", response_model=CompanyAdminOut
+)
+async def update_company_admin(
+    company_id: UUID,
+    user_id: UUID,
+    payload: CompanyAdminUpdate,
+    _: PlatformOwner,
+    db: DbDep,
+) -> CompanyAdminOut:
+    target = (
+        await db.execute(
+            select(User).where(
+                User.id == user_id,
+                User.company_id == company_id,
+                User.role == UserRole.SUPER_ADMIN,
+                User.deleted_at.is_(None),
+            )
+        )
+    ).scalar_one_or_none()
+    if target is None:
+        raise HTTPException(status_code=404, detail="Super admin not found")
+
+    data = payload.model_dump(exclude_unset=True)
+    if "phone" in data and data["phone"] != target.phone:
+        clashing = (
+            await db.execute(
+                select(User).where(
+                    User.company_id == company_id,
+                    User.phone == data["phone"],
+                    User.deleted_at.is_(None),
+                    User.id != user_id,
+                )
+            )
+        ).scalar_one_or_none()
+        if clashing is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Bu telefon raqami band",
+            )
+        target.phone = data["phone"]
+    if "full_name" in data:
+        target.full_name = data["full_name"]
+    if "password" in data and data["password"]:
+        target.password_hash = hash_password(data["password"])
+    if "is_active" in data and data["is_active"] is not None:
+        target.is_active = data["is_active"]
+
+    try:
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="Konflikt")
+
+    await db.commit()
+    await db.refresh(target)
+    return CompanyAdminOut.model_validate(target)
 
 
 @router.delete("/companies/{company_id}", status_code=204)

@@ -21,6 +21,9 @@ class TariffLimits:
     max_customers: int | None
     max_orders_per_month: int | None
     label: str
+    description: str
+    monthly_fee_default: int  # so'm — owner can override per company
+    features: tuple[str, ...]
 
 
 # Limit table — kept here so SaaS pricing and code stay in sync.
@@ -30,26 +33,87 @@ LIMITS: dict[TariffPlan, TariffLimits] = {
         max_customers=100,
         max_orders_per_month=200,
         label="Sinov",
+        description="14 kun bepul. Kichik tajriba uchun.",
+        monthly_fee_default=0,
+        features=(
+            "2 gacha haydovchi",
+            "100 mijoz, 200 buyurtma/oy",
+            "Haydovchi mobil ilovasi",
+            "Yandex marshrut",
+            "Naqd + karta to'lov",
+        ),
     ),
     TariffPlan.START: TariffLimits(
         max_drivers=3,
         max_customers=500,
         max_orders_per_month=1000,
         label="Start",
+        description="Kichik biznes uchun — 1 operator, 3 haydovchi.",
+        monthly_fee_default=99000,
+        features=(
+            "3 gacha haydovchi",
+            "500 mijoz, 1000 buyurtma/oy",
+            "Haydovchi ilovasi (iOS + Android)",
+            "Yandex xaritada marshrut",
+            "Naqd + karta to'lov",
+            "Idish balansi avtomat",
+            "Dashboard va hisobotlar",
+        ),
     ),
     TariffPlan.BIZNES: TariffLimits(
         max_drivers=None,
         max_customers=None,
         max_orders_per_month=None,
         label="Biznes",
+        description="O'rta biznes — cheksiz haydovchi va mijoz.",
+        monthly_fee_default=199000,
+        features=(
+            "Cheksiz haydovchi · mijoz · buyurtma",
+            "Start'dagi hamma narsa",
+            "Ko'p operator",
+            "Kompaniya brendi (logo, nom)",
+            "Mijoz qarzlari va segmentatsiya",
+            "Audit log · buyurtma tarixi",
+            "Prioritet qo'llab-quvvatlash",
+            "Payme onlayn (yaqinda)",
+        ),
     ),
     TariffPlan.PREMIUM: TariffLimits(
         max_drivers=None,
         max_customers=None,
         max_orders_per_month=None,
         label="Premium",
+        description="Tarmoqlar va yirik kompaniyalar uchun.",
+        monthly_fee_default=399000,
+        features=(
+            "Biznes'dagi hamma narsa",
+            "Ko'p filial",
+            "Shaxsiy menejer",
+            "Shaxsiy trening (offline)",
+            "Kastom hisobot so'rov bo'yicha",
+            "Shaxsiy domen (siz tanlang)",
+            "24/7 prioritet + SLA",
+            "Payme + kastom integratsiyalar",
+        ),
     ),
 }
+
+
+def tariffs_meta() -> list[dict]:
+    """Public-facing list of tariff plans for owner UI (Tariflar page + create form)."""
+    return [
+        {
+            "plan": plan.value,
+            "label": limits.label,
+            "description": limits.description,
+            "monthly_fee_default": limits.monthly_fee_default,
+            "max_drivers": limits.max_drivers,
+            "max_customers": limits.max_customers,
+            "max_orders_per_month": limits.max_orders_per_month,
+            "features": list(limits.features),
+        }
+        for plan, limits in LIMITS.items()
+    ]
 
 
 @dataclass

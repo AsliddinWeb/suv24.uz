@@ -79,8 +79,36 @@ export interface PlatformCompanyUpdate {
   is_active?: boolean | null;
 }
 
+export interface PlatformTariffMeta {
+  plan: TariffPlan;
+  label: string;
+  description: string;
+  monthly_fee_default: number;
+  max_drivers: number | null;
+  max_customers: number | null;
+  max_orders_per_month: number | null;
+  features: string[];
+}
+
+export interface CompanyAdminOut {
+  id: string;
+  full_name: string;
+  phone: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface CompanyAdminUpdate {
+  full_name?: string | null;
+  phone?: string | null;
+  password?: string | null;
+  is_active?: boolean | null;
+}
+
 export const platformApi = {
   overview: () => http.get<PlatformOverview>("/platform/overview").then((r) => r.data),
+  tariffs: () => http.get<PlatformTariffMeta[]>("/platform/tariffs").then((r) => r.data),
   listCompanies: (params?: { q?: string; active?: boolean }) =>
     http
       .get<PlatformCompanyOut[]>("/platform/companies", { params })
@@ -92,6 +120,17 @@ export const platformApi = {
   updateCompany: (id: string, body: PlatformCompanyUpdate) =>
     http.patch<PlatformCompanyOut>(`/platform/companies/${id}`, body).then((r) => r.data),
   deleteCompany: (id: string) => http.delete(`/platform/companies/${id}`).then((r) => r.data),
+  listCompanyAdmins: (id: string) =>
+    http
+      .get<CompanyAdminOut[]>(`/platform/companies/${id}/admins`)
+      .then((r) => r.data),
+  updateCompanyAdmin: (companyId: string, adminId: string, body: CompanyAdminUpdate) =>
+    http
+      .patch<CompanyAdminOut>(
+        `/platform/companies/${companyId}/admins/${adminId}`,
+        body,
+      )
+      .then((r) => r.data),
 };
 
 export const TARIFF_LABELS: Record<TariffPlan, string> = {

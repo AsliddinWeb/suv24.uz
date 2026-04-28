@@ -46,6 +46,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "Mijoz arizalari" },
       },
       {
+        path: "tariffs",
+        name: "platform-tariffs",
+        component: () => import("@/views/PlatformTariffsView.vue"),
+        meta: { title: "Tariflar" },
+      },
+      {
         path: "companies/new",
         name: "platform-company-new",
         component: () => import("@/views/PlatformCompanyCreateView.vue"),

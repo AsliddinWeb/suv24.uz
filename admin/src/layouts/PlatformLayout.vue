@@ -5,6 +5,7 @@ import {
   HomeIcon,
   BuildingOffice2Icon,
   ChatBubbleLeftRightIcon,
+  TagIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
@@ -23,6 +24,7 @@ const nav = computed(() => [
   { path: "/platform", label: "Umumiy holat", icon: HomeIcon, exact: true },
   { path: "/platform/companies", label: "Kompaniyalar", icon: BuildingOffice2Icon },
   { path: "/platform/leads", label: "Mijoz arizalari", icon: ChatBubbleLeftRightIcon },
+  { path: "/platform/tariffs", label: "Tariflar", icon: TagIcon },
 ]);
 
 function isActive(path: string, exact?: boolean) {
