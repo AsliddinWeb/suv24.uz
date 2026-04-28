@@ -33,6 +33,22 @@ export const customersApi = {
     },
   ) => http.post<AddressOut>(`/customers/${id}/addresses`, body).then((r) => r.data),
 
+  updateAddress: (
+    customerId: UUID,
+    addressId: UUID,
+    body: {
+      label?: string | null;
+      address_text?: string | null;
+      lat?: number | null;
+      lng?: number | null;
+      notes?: string | null;
+      is_active?: boolean | null;
+    },
+  ) =>
+    http
+      .patch<AddressOut>(`/customers/${customerId}/addresses/${addressId}`, body)
+      .then((r) => r.data),
+
   removeAddress: (customerId: UUID, addressId: UUID) =>
     http.delete(`/customers/${customerId}/addresses/${addressId}`).then((r) => r.data),
 };
