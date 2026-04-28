@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { PlusIcon, TrashIcon, ArrowLeftIcon } from "@heroicons/vue/20/solid";
 import {
   Combobox,
@@ -11,7 +11,7 @@ import {
 } from "@headlessui/vue";
 import { ChevronUpDownIcon, CheckIcon } from "@heroicons/vue/20/solid";
 import { customersApi } from "@/api/customers";
-import { productsApi } from "@/api/products";
+import { productsApi, type ProductStockSummary } from "@/api/products";
 import { ordersApi } from "@/api/orders";
 import { formatMoney } from "@/utils/format";
 import { toast } from "@/lib/toast";
@@ -27,6 +27,7 @@ const customerQuery = ref("");
 const selectedCustomer = ref<CustomerOut | null>(null);
 const addresses = ref<AddressOut[]>([]);
 const products = ref<ProductOut[]>([]);
+const stocks = ref<Record<string, ProductStockSummary>>({});
 
 const form = reactive<{
   address_id: UUID | null;
@@ -44,7 +45,12 @@ async function searchCustomers(q: string) {
 }
 
 async function loadProducts() {
-  products.value = await productsApi.list({ only_active: true });
+  const [list, stockList] = await Promise.all([
+    productsApi.list({ only_active: true }),
+    productsApi.stocks().catch(() => []),
+  ]);
+  products.value = list;
+  stocks.value = Object.fromEntries(stockList.map((s) => [s.product_id, s]));
 }
 
 watch(selectedCustomer, async (c) => {
@@ -89,11 +95,45 @@ const total = computed(() => {
 });
 
 const productOptions = computed(() =>
-  products.value.map((p) => ({
-    value: p.id,
-    label: `${p.name} — ${formatMoney(p.current_price)}`,
-  })),
+  products.value.map((p) => {
+    const stock = stocks.value[p.id];
+    const stockHint = p.is_returnable && stock
+      ? ` · ombor: ${stock.available_full}`
+      : "";
+    return {
+      value: p.id,
+      label: `${p.name} — ${formatMoney(p.current_price)}${stockHint}`,
+    };
+  }),
 );
+
+interface StockShort {
+  product_name: string;
+  required: number;
+  available: number;
+}
+
+const stockShortfalls = computed<StockShort[]>(() => {
+  const required: Record<string, number> = {};
+  for (const it of form.items) {
+    required[it.product_id] = (required[it.product_id] || 0) + it.quantity;
+  }
+  const out: StockShort[] = [];
+  for (const [pid, need] of Object.entries(required)) {
+    const product = products.value.find((p) => p.id === pid);
+    if (!product?.is_returnable) continue;
+    const s = stocks.value[pid];
+    if (!s) continue;
+    if (s.available_full < need) {
+      out.push({
+        product_name: `${product.name} ${product.volume_liters}L`,
+        required: need,
+        available: s.available_full,
+      });
+    }
+  }
+  return out;
+});
 
 const addressOptions = computed(() =>
   addresses.value.map((a) => ({
@@ -246,13 +286,33 @@ async function onSubmit() {
         <textarea v-model="form.notes" rows="2" class="input resize-none" placeholder="Masalan: 14:00-18:00 ga yetkazish" />
       </div>
 
+      <!-- Stock shortfall warning -->
+      <div
+        v-if="stockShortfalls.length"
+        class="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 p-4 space-y-1.5"
+      >
+        <p class="text-sm font-bold text-rose-900 dark:text-rose-200">
+          ⚠️ Omborda yetarli idish yo'q
+        </p>
+        <ul class="text-sm text-rose-800 dark:text-rose-300 space-y-0.5">
+          <li v-for="s in stockShortfalls" :key="s.product_name">
+            {{ s.product_name }}: kerak <strong>{{ s.required }}</strong>,
+            mavjud <strong>{{ s.available }}</strong>
+            <span class="text-rose-600">(
+              <RouterLink to="/app/products" class="underline font-semibold">Mahsulotlar</RouterLink>
+              sahifasidan kirim qiling)
+            </span>
+          </li>
+        </ul>
+      </div>
+
       <!-- Footer -->
       <div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-5">
         <div>
           <p class="text-sm text-slate-500 dark:text-slate-400">Jami</p>
           <p class="text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ formatMoney(total) }}</p>
         </div>
-        <button class="btn-primary" :disabled="saving" @click="onSubmit">
+        <button class="btn-primary" :disabled="saving || stockShortfalls.length > 0" @click="onSubmit">
           <svg v-if="saving" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25" />
             <path fill="currentColor" class="opacity-75" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />

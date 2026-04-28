@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
+import { RouterLink } from "vue-router";
 import {
   PlusIcon,
   CurrencyDollarIcon,
   ClockIcon,
   CubeIcon,
   TrashIcon,
+  ArchiveBoxArrowDownIcon,
 } from "@heroicons/vue/20/solid";
-import { productsApi } from "@/api/products";
+import { productsApi, type ProductStockSummary } from "@/api/products";
+import { purchasesApi, cashApi, type CashSnapshot } from "@/api/warehouse";
 import { formatDateTime, formatMoney } from "@/utils/format";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/lib/confirm";
@@ -17,11 +20,13 @@ import AppDialog from "@/components/ui/AppDialog.vue";
 import AppMenu from "@/components/ui/AppMenu.vue";
 import AppMenuItem from "@/components/ui/AppMenuItem.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
-import type { PriceOut, ProductOut } from "@/types/api";
+import type { PriceOut, ProductOut, UUID } from "@/types/api";
 
 const confirm = useConfirm();
 
 const items = ref<ProductOut[]>([]);
+const stocks = ref<Record<string, ProductStockSummary>>({});
+const cash = ref<CashSnapshot | null>(null);
 const loading = ref(false);
 
 const newOpen = ref(false);
@@ -40,16 +45,45 @@ const historyOpen = ref(false);
 const historyItems = ref<PriceOut[]>([]);
 const historyFor = ref<ProductOut | null>(null);
 
+// Purchase (Kirim) dialog
+const purchaseOpen = ref(false);
+const purchaseFor = ref<ProductOut | null>(null);
+const purchaseForm = reactive({
+  full_count: "0",
+  empty_count: "0",
+  unit_cost: "0",
+  supplier: "",
+  note: "",
+});
+
+const purchaseTotal = computed(() => {
+  const fc = parseInt(purchaseForm.full_count || "0", 10) || 0;
+  const ec = parseInt(purchaseForm.empty_count || "0", 10) || 0;
+  const uc = parseFloat(purchaseForm.unit_cost || "0") || 0;
+  return (fc + ec) * uc;
+});
+
 async function load() {
   loading.value = true;
   try {
-    items.value = await productsApi.list();
+    const [list, stockList, cashSnap] = await Promise.all([
+      productsApi.list(),
+      productsApi.stocks(),
+      cashApi.snapshot().catch(() => null),
+    ]);
+    items.value = list;
+    stocks.value = Object.fromEntries(stockList.map((s) => [s.product_id, s]));
+    cash.value = cashSnap;
   } finally {
     loading.value = false;
   }
 }
 
 onMounted(load);
+
+function stockFor(id: UUID): ProductStockSummary | undefined {
+  return stocks.value[id];
+}
 
 async function onCreate() {
   if (!form.name || !form.initial_price) {
@@ -98,11 +132,55 @@ async function onDelete(p: ProductOut) {
   toast.success("O'chirildi");
   load();
 }
+
+function openPurchase(p: ProductOut) {
+  purchaseFor.value = p;
+  purchaseForm.full_count = "0";
+  purchaseForm.empty_count = "0";
+  purchaseForm.unit_cost = "0";
+  purchaseForm.supplier = "";
+  purchaseForm.note = "";
+  purchaseOpen.value = true;
+}
+
+async function submitPurchase() {
+  if (!purchaseFor.value) return;
+  const fc = parseInt(purchaseForm.full_count || "0", 10) || 0;
+  const ec = parseInt(purchaseForm.empty_count || "0", 10) || 0;
+  if (fc < 0 || ec < 0) {
+    toast.warning("Manfiy son bermang");
+    return;
+  }
+  if (fc + ec === 0) {
+    toast.warning("Soni 0 bo'lmasin");
+    return;
+  }
+  const uc = parseFloat(purchaseForm.unit_cost || "0") || 0;
+  if (uc < 0) {
+    toast.warning("Birlik narxi manfiy bo'lmasin");
+    return;
+  }
+  try {
+    await purchasesApi.create({
+      product_id: purchaseFor.value.id,
+      full_count: fc,
+      empty_count: ec,
+      unit_cost: uc.toString(),
+      supplier: purchaseForm.supplier || null,
+      note: purchaseForm.note || null,
+    });
+    toast.success("Kirim yozildi");
+    purchaseOpen.value = false;
+    await load();
+  } catch (e: any) {
+    toast.error(e?.response?.data?.detail || "Saqlab bo'lmadi");
+  }
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <PageHeader title="Mahsulotlar" subtitle="Katalog va narx tarixi">
+    <PageHeader title="Mahsulotlar" subtitle="Katalog, narx tarixi va ombor balansi">
       <template #actions>
         <button class="btn-primary" @click="newOpen = true">
           <PlusIcon class="h-4 w-4" />
@@ -110,6 +188,23 @@ async function onDelete(p: ProductOut) {
         </button>
       </template>
     </PageHeader>
+
+    <!-- Cash hint -->
+    <div
+      v-if="cash"
+      class="card p-4 flex items-center gap-3 bg-gradient-to-r from-brand-50 to-indigo-50 dark:from-brand-950/30 dark:to-indigo-950/30 border-brand-200 dark:border-brand-900/40"
+    >
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 text-white shrink-0">
+        <CurrencyDollarIcon class="h-5 w-5" />
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs text-slate-500 dark:text-slate-400">Kassada</p>
+        <p class="text-lg font-bold text-slate-900 dark:text-slate-100">
+          {{ formatMoney(cash.account.balance) }}
+        </p>
+      </div>
+      <RouterLink to="/app/warehouse" class="btn-ghost btn-sm">Ombor →</RouterLink>
+    </div>
 
     <EmptyState v-if="!loading && !items.length" title="Mahsulot yo'q" />
 
@@ -126,6 +221,10 @@ async function onDelete(p: ProductOut) {
             </div>
           </div>
           <AppMenu>
+            <AppMenuItem v-if="p.is_returnable" @click="openPurchase(p)">
+              <ArchiveBoxArrowDownIcon class="h-4 w-4" />
+              Yangi kirim
+            </AppMenuItem>
             <AppMenuItem @click="openPrice(p)">
               <CurrencyDollarIcon class="h-4 w-4" />
               Narx o'zgartirish
@@ -148,7 +247,59 @@ async function onDelete(p: ProductOut) {
           </p>
         </div>
 
-        <div class="mt-4 flex items-center gap-2">
+        <!-- Stock summary -->
+        <div
+          v-if="p.is_returnable"
+          class="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-3"
+        >
+          <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Ombor balansi</p>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <div>
+              <p class="text-[10px] text-slate-500">Omborda</p>
+              <p class="text-sm font-bold text-emerald-600">
+                {{ stockFor(p.id)?.warehouse_full ?? 0 }}
+                <span class="text-slate-400 font-normal">to'la</span>
+                <span class="text-slate-400 mx-1">·</span>
+                <span class="text-slate-700 dark:text-slate-300">{{ stockFor(p.id)?.warehouse_empty ?? 0 }}</span>
+                <span class="text-slate-400 font-normal text-[10px]"> bo'sh</span>
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Haydovchilarda</p>
+              <p class="text-sm font-bold text-brand-600">
+                {{ stockFor(p.id)?.drivers_full ?? 0 }}
+                <span class="text-slate-400 font-normal">to'la</span>
+                <span class="text-slate-400 mx-1">·</span>
+                <span class="text-slate-700 dark:text-slate-300">{{ stockFor(p.id)?.drivers_empty ?? 0 }}</span>
+                <span class="text-slate-400 font-normal text-[10px]"> bo'sh</span>
+              </p>
+            </div>
+          </div>
+          <div class="flex items-baseline justify-between pt-2 border-t border-slate-200 dark:border-slate-700/50">
+            <span class="text-[10px] text-slate-500 uppercase tracking-wide">Sotish uchun mavjud</span>
+            <span
+              :class="[
+                'text-base font-extrabold',
+                (stockFor(p.id)?.available_full ?? 0) > 10
+                  ? 'text-emerald-600'
+                  : (stockFor(p.id)?.available_full ?? 0) > 0
+                    ? 'text-amber-600'
+                    : 'text-rose-600',
+              ]"
+            >
+              {{ stockFor(p.id)?.available_full ?? 0 }} ta
+            </span>
+          </div>
+          <button
+            class="btn-primary btn-sm w-full mt-3"
+            @click="openPurchase(p)"
+          >
+            <ArchiveBoxArrowDownIcon class="h-4 w-4" />
+            Yangi kirim
+          </button>
+        </div>
+
+        <div class="mt-4 flex items-center gap-2 flex-wrap">
           <AppBadge v-if="p.is_returnable" variant="success">Qaytariladigan</AppBadge>
           <AppBadge v-else variant="neutral">Bir martalik</AppBadge>
           <AppBadge v-if="!p.is_active" variant="danger">Nofaol</AppBadge>
@@ -156,6 +307,7 @@ async function onDelete(p: ProductOut) {
       </div>
     </div>
 
+    <!-- New product dialog -->
     <AppDialog v-model:open="newOpen" title="Yangi mahsulot">
       <div class="space-y-3">
         <div>
@@ -183,6 +335,7 @@ async function onDelete(p: ProductOut) {
       </template>
     </AppDialog>
 
+    <!-- Price dialog -->
     <AppDialog v-model:open="priceOpen" :title="`Narx: ${pricingProduct?.name}`">
       <div class="space-y-3">
         <p class="text-sm text-slate-500 dark:text-slate-400">
@@ -199,6 +352,7 @@ async function onDelete(p: ProductOut) {
       </template>
     </AppDialog>
 
+    <!-- Price history -->
     <AppDialog v-model:open="historyOpen" :title="`Narx tarixi: ${historyFor?.name}`" max-width="max-w-2xl">
       <div class="overflow-x-auto">
         <table class="data-table">
@@ -221,6 +375,58 @@ async function onDelete(p: ProductOut) {
           </tbody>
         </table>
       </div>
+    </AppDialog>
+
+    <!-- Purchase (Kirim) dialog -->
+    <AppDialog v-model:open="purchaseOpen" :title="`Kirim: ${purchaseFor?.name} ${purchaseFor?.volume_liters}L`" max-width="max-w-lg">
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              To'la idishlar
+            </label>
+            <input v-model="purchaseForm.full_count" type="number" min="0" class="input" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Bo'sh idishlar
+            </label>
+            <input v-model="purchaseForm.empty_count" type="number" min="0" class="input" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Bir dona narxi (so'm)
+          </label>
+          <input v-model="purchaseForm.unit_cost" type="number" min="0" class="input" placeholder="15000" />
+        </div>
+        <div class="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-3 flex items-baseline justify-between">
+          <span class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Jami xarajat</span>
+          <span class="text-xl font-extrabold text-rose-600">−{{ formatMoney(purchaseTotal) }}</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Yetkazib beruvchi
+            </label>
+            <input v-model="purchaseForm.supplier" class="input" placeholder="Hayot Suv MChJ" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Izoh
+            </label>
+            <input v-model="purchaseForm.note" class="input" />
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-500">
+          Bu summa kassadan ayiriladi va omborga
+          {{ (parseInt(purchaseForm.full_count) || 0) + (parseInt(purchaseForm.empty_count) || 0) }} ta idish qo'shiladi.
+        </p>
+      </div>
+      <template #footer>
+        <button class="btn-secondary" @click="purchaseOpen = false">Bekor qilish</button>
+        <button class="btn-primary" @click="submitPurchase">Saqlash</button>
+      </template>
     </AppDialog>
   </div>
 </template>

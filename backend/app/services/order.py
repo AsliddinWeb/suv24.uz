@@ -2,8 +2,10 @@ from decimal import Decimal
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.bottle import DriverBottleBalance
 from app.models.customer import CustomerAddress
 from app.models.driver import Driver
 from app.models.order import (
@@ -16,6 +18,7 @@ from app.models.order import (
     OrderStatusLog,
 )
 from app.models.product import Product
+from app.models.warehouse import WarehouseStock
 from app.repositories.address import AddressRepository
 from app.repositories.customer import CustomerRepository
 from app.repositories.driver import DriverRepository
@@ -56,6 +59,72 @@ class OrderService:
             )
         return product
 
+    async def _check_returnable_stock(
+        self, company_id: UUID, items: list
+    ) -> None:
+        """Block order creation if returnable products lack inventory.
+        Available pool = warehouse.full + sum(drivers.full) per product."""
+        # Aggregate required qty per product
+        required: dict[UUID, int] = {}
+        for it in items:
+            required[it.product_id] = required.get(it.product_id, 0) + it.quantity
+
+        if not required:
+            return
+
+        # Pull product flags (only check returnable ones)
+        prods = (
+            await self.db.execute(
+                select(Product).where(
+                    Product.id.in_(list(required.keys())),
+                    Product.company_id == company_id,
+                )
+            )
+        ).scalars().all()
+        returnable = {p.id: p for p in prods if p.is_returnable}
+        if not returnable:
+            return
+
+        shortfalls: list[str] = []
+        for pid, p in returnable.items():
+            need = required[pid]
+            wh = (
+                await self.db.execute(
+                    select(func.coalesce(WarehouseStock.full_count, 0)).where(
+                        WarehouseStock.company_id == company_id,
+                        WarehouseStock.product_id == pid,
+                    )
+                )
+            ).scalar()
+            wh_full = int(wh or 0)
+            drv = (
+                await self.db.execute(
+                    select(func.coalesce(func.sum(DriverBottleBalance.full_count), 0))
+                    .select_from(DriverBottleBalance)
+                    .join(Driver, Driver.id == DriverBottleBalance.driver_id)
+                    .where(
+                        Driver.company_id == company_id,
+                        Driver.deleted_at.is_(None),
+                        DriverBottleBalance.product_id == pid,
+                    )
+                )
+            ).scalar()
+            available = wh_full + int(drv or 0)
+            if available < need:
+                shortfalls.append(
+                    f"{p.name}: kerak {need}, mavjud {available} "
+                    f"(omborda {wh_full} + haydovchilarda {int(drv or 0)})"
+                )
+
+        if shortfalls:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    "Yetarli idish yo'q. Avval omborga kirim qiling.\n"
+                    + "\n".join(shortfalls)
+                ),
+            )
+
     async def create_order(
         self,
         company_id: UUID,
@@ -67,6 +136,10 @@ class OrderService:
             raise HTTPException(status_code=404, detail="Customer not found")
 
         await self._validate_address(customer.id, data.address_id)
+
+        # Verify there are enough bottles in the system before charging the
+        # customer. Operator gets a clear shortfall message.
+        await self._check_returnable_stock(company_id, data.items)
 
         order_items: list[OrderItem] = []
         total = Decimal("0.00")
