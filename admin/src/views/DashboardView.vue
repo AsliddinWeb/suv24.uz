@@ -8,12 +8,26 @@ import {
   UsersIcon,
   ArrowPathIcon,
   ArrowUpRightIcon,
+  ArchiveBoxXMarkIcon,
+  ArrowDownCircleIcon,
+  ArrowUpCircleIcon,
+  ChartPieIcon,
+  WalletIcon,
 } from "@heroicons/vue/24/outline";
 import dayjs from "dayjs";
+import { RouterLink } from "vue-router";
 import { ordersApi } from "@/api/orders";
 import { paymentsApi } from "@/api/payments";
 import { customersApi } from "@/api/customers";
 import { driversApi } from "@/api/drivers";
+import { productsApi, type ProductStockSummary } from "@/api/products";
+import {
+  cashApi,
+  CASH_KIND_LABELS,
+  type CashSummary,
+  type CashTransaction,
+  type CashTxKind,
+} from "@/api/warehouse";
 import { reportsApi, type DailyRevenuePoint, type StatusDistributionItem } from "@/api/reports";
 import { APP_TZ, formatDateTime, formatMoney } from "@/utils/format";
 import { orderStatusLabel, orderStatusType } from "@/utils/status";
@@ -21,7 +35,7 @@ import { useAuthStore } from "@/stores/auth";
 import AppBadge from "@/components/ui/AppBadge.vue";
 import RevenueChart from "@/components/charts/RevenueChart.vue";
 import StatusDonut from "@/components/charts/StatusDonut.vue";
-import type { OrderOut } from "@/types/api";
+import type { OrderOut, ProductOut } from "@/types/api";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -36,6 +50,12 @@ const driversTotal = ref(0);
 const recent = ref<OrderOut[]>([]);
 const revenuePoints = ref<DailyRevenuePoint[]>([]);
 const statusDist = ref<StatusDistributionItem[]>([]);
+
+// New: cash + stock signals
+const cashSummary = ref<CashSummary | null>(null);
+const cashRecent = ref<CashTransaction[]>([]);
+const products = ref<ProductOut[]>([]);
+const stocks = ref<ProductStockSummary[]>([]);
 
 const tick = ref(Date.now());
 let tickTimer: ReturnType<typeof setInterval> | null = null;
@@ -83,13 +103,28 @@ const ordersWeek = computed(() => revenuePoints.value.reduce((s, p) => s + p.ord
 async function load() {
   loading.value = true;
   try {
-    const [revenue, statuses, customersPage, drivers, summary, recentRes] = await Promise.all([
+    const [
+      revenue,
+      statuses,
+      customersPage,
+      drivers,
+      summary,
+      recentRes,
+      cashSum,
+      cashTx,
+      productList,
+      stockList,
+    ] = await Promise.all([
       reportsApi.dailyRevenue(7),
       reportsApi.ordersByStatus(),
       customersApi.list({ page: 1, page_size: 1 }),
       driversApi.list(),
       paymentsApi.cashSummary(),
       ordersApi.list({ page: 1, page_size: 6 }),
+      cashApi.summary().catch(() => null),
+      cashApi.transactions(8).catch(() => []),
+      productsApi.list({ only_active: true }).catch(() => []),
+      productsApi.stocks().catch(() => []),
     ]);
     revenuePoints.value = revenue;
     statusDist.value = statuses;
@@ -99,6 +134,10 @@ async function load() {
     cashToday.value = summary.total_cash;
     cardToday.value = summary.total_card_manual;
     recent.value = recentRes.items;
+    cashSummary.value = cashSum;
+    cashRecent.value = cashTx;
+    products.value = productList;
+    stocks.value = stockList;
 
     activeOrders.value = statuses
       .filter((s) => ["pending", "assigned", "in_delivery"].includes(s.status))
@@ -119,6 +158,18 @@ interface KpiCard {
   action?: () => void;
 }
 
+const todayNet = computed(() => {
+  const cs = cashSummary.value;
+  if (!cs) return 0;
+  return parseFloat(cs.today_in) - parseFloat(cs.today_out);
+});
+
+const monthNet = computed(() => {
+  const cs = cashSummary.value;
+  if (!cs) return 0;
+  return parseFloat(cs.month_in) - parseFloat(cs.month_out);
+});
+
 const kpis = computed<KpiCard[]>(() => [
   {
     label: "Bugungi tushum",
@@ -131,30 +182,72 @@ const kpis = computed<KpiCard[]>(() => [
     gradient: "from-emerald-500 to-teal-600",
   },
   {
+    label: "Kassada",
+    value: cashSummary.value ? formatMoney(cashSummary.value.balance) : "—",
+    sub:
+      cashSummary.value
+        ? `Bugun: +${formatMoney(cashSummary.value.today_in)} / −${formatMoney(cashSummary.value.today_out)}`
+        : "Boshlang'ich balans kerak",
+    icon: WalletIcon,
+    gradient: "from-brand-500 to-indigo-600",
+    action: () => router.push("/app/warehouse"),
+  },
+  {
     label: "Faol buyurtmalar",
     value: String(activeOrders.value),
-    sub: "Kutilmoqda, biriktirilgan, yo'lda",
+    sub: "Kutilmoqda · biriktirilgan · yo'lda",
     icon: ShoppingBagIcon,
-    gradient: "from-brand-500 to-indigo-600",
+    gradient: "from-amber-500 to-orange-600",
     action: () => router.push("/app/orders"),
   },
   {
-    label: "Faol haydovchilar",
+    label: "Haydovchilar",
     value: `${driversActive.value}/${driversTotal.value}`,
-    sub: "Bugun ishga chiqqan",
+    sub: "Faol / jami",
     icon: TruckIcon,
-    gradient: "from-amber-500 to-orange-600",
+    gradient: "from-rose-500 to-pink-600",
     action: () => router.push("/app/drivers"),
   },
-  {
-    label: "Mijozlar",
-    value: String(customersTotal.value),
-    sub: "Bazadagi jami mijoz",
-    icon: UsersIcon,
-    gradient: "from-rose-500 to-pink-600",
-    action: () => router.push("/app/customers"),
-  },
 ]);
+
+// Stock alerts: returnable products whose available_full <= 15
+interface StockAlert {
+  product_id: string;
+  product_name: string;
+  volume_liters: number;
+  available: number;
+  level: "critical" | "low";
+}
+
+const stockAlerts = computed<StockAlert[]>(() => {
+  const out: StockAlert[] = [];
+  for (const s of stocks.value) {
+    if (!s.is_returnable) continue;
+    if (s.available_full > 15) continue;
+    const p = products.value.find((x) => x.id === s.product_id);
+    if (!p) continue;
+    out.push({
+      product_id: s.product_id,
+      product_name: p.name,
+      volume_liters: p.volume_liters,
+      available: s.available_full,
+      level: s.available_full < 5 ? "critical" : "low",
+    });
+  }
+  return out.sort((a, b) => a.available - b.available);
+});
+
+function txSign(amount: string): string {
+  return parseFloat(amount) >= 0 ? "+" : "";
+}
+function txColor(amount: string): string {
+  return parseFloat(amount) >= 0
+    ? "text-emerald-600 dark:text-emerald-400"
+    : "text-rose-600 dark:text-rose-400";
+}
+function kindLabel(k: CashTxKind): string {
+  return CASH_KIND_LABELS[k];
+}
 </script>
 
 <template>
@@ -219,6 +312,113 @@ const kpis = computed<KpiCard[]>(() => [
       </button>
     </div>
 
+    <!-- Stock alerts + Cash flow row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Stock alerts -->
+      <div class="card p-5 lg:col-span-2">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <ArchiveBoxXMarkIcon class="h-5 w-5 text-amber-500" />
+            <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
+              Pasaygan zaxiralar
+            </h3>
+          </div>
+          <RouterLink to="/app/products" class="text-xs text-brand-600 font-semibold hover:underline">
+            Hammasi →
+          </RouterLink>
+        </div>
+        <div v-if="!stockAlerts.length" class="py-6 text-center text-sm text-slate-500">
+          ✅ Hamma mahsulot yetarli ({{ stocks.filter(s => s.is_returnable).length }} ta turdagi tovar)
+        </div>
+        <div v-else class="space-y-2">
+          <div
+            v-for="a in stockAlerts"
+            :key="a.product_id"
+            :class="[
+              'flex items-center gap-3 p-3 rounded-xl',
+              a.level === 'critical'
+                ? 'bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50'
+                : 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50',
+            ]"
+          >
+            <div
+              :class="[
+                'h-10 w-10 rounded-xl flex items-center justify-center text-white font-bold shrink-0',
+                a.level === 'critical' ? 'bg-rose-500' : 'bg-amber-500',
+              ]"
+            >
+              {{ a.available }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                {{ a.product_name }} · {{ a.volume_liters }}L
+              </p>
+              <p class="text-xs text-slate-600 dark:text-slate-400">
+                {{ a.level === 'critical' ? 'Tugash arafasida' : 'Kam qoldi' }} —
+                <strong>{{ a.available }} ta sotish uchun</strong>
+              </p>
+            </div>
+            <RouterLink
+              to="/app/products"
+              class="text-xs font-bold text-brand-600 hover:underline whitespace-nowrap"
+            >
+              Kirim qilish →
+            </RouterLink>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash flow this month -->
+      <div class="card p-5 flex flex-col">
+        <div class="flex items-center gap-2 mb-3">
+          <ChartPieIcon class="h-5 w-5 text-brand-500" />
+          <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
+            Bu oy kassa
+          </h3>
+        </div>
+        <div v-if="cashSummary" class="space-y-3 flex-1">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-lg bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center">
+              <ArrowDownCircleIcon class="h-5 w-5" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[11px] text-slate-500 uppercase tracking-wide">Kirim</p>
+              <p class="text-base font-bold text-emerald-600 truncate">
+                +{{ formatMoney(cashSummary.month_in) }}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-lg bg-rose-100 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center">
+              <ArrowUpCircleIcon class="h-5 w-5" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[11px] text-slate-500 uppercase tracking-wide">Chiqim</p>
+              <p class="text-base font-bold text-rose-600 truncate">
+                −{{ formatMoney(cashSummary.month_out) }}
+              </p>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-800">
+            <p class="text-[11px] text-slate-500 uppercase tracking-wide">Sof daromad</p>
+            <p
+              :class="[
+                'text-2xl font-extrabold',
+                monthNet >= 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-rose-600 dark:text-rose-400',
+              ]"
+            >
+              {{ monthNet >= 0 ? '+' : '−' }}{{ formatMoney(Math.abs(monthNet)) }}
+            </p>
+          </div>
+        </div>
+        <div v-else class="flex-1 flex items-center justify-center text-sm text-slate-500 py-6">
+          Boshlang'ich balans kiritilmagan
+        </div>
+      </div>
+    </div>
+
     <!-- Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="card p-6 lg:col-span-2">
@@ -253,34 +453,56 @@ const kpis = computed<KpiCard[]>(() => [
 
     <!-- Payments + Recent -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="card p-6">
-        <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4">
-          Bugungi to'lovlar
-        </h3>
-        <div class="space-y-3">
-          <div class="flex items-center justify-between rounded-xl bg-emerald-50 dark:bg-emerald-950/30 p-4">
-            <div>
-              <p class="text-xs text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">Naqd</p>
-              <p class="text-lg font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">
-                {{ formatMoney(cashToday) }}
-              </p>
-            </div>
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400">
-              <BanknotesIcon class="h-5 w-5" />
-            </div>
+      <!-- Today's payments breakdown + recent cash transactions -->
+      <div class="card p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
+            Bugungi to'lovlar
+          </h3>
+          <RouterLink to="/app/payments" class="text-xs text-brand-600 font-semibold hover:underline">
+            Hammasi →
+          </RouterLink>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <div class="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 p-3">
+            <p class="text-[10px] text-emerald-700 dark:text-emerald-300 uppercase tracking-wide font-semibold">Naqd</p>
+            <p class="text-base font-extrabold text-emerald-700 dark:text-emerald-400 mt-0.5 truncate">
+              {{ formatMoney(cashToday) }}
+            </p>
           </div>
-          <div class="flex items-center justify-between rounded-xl bg-brand-50 dark:bg-brand-950/30 p-4">
-            <div>
-              <p class="text-xs text-brand-700 dark:text-brand-300 uppercase tracking-wide">Karta</p>
-              <p class="text-lg font-bold text-brand-700 dark:text-brand-400 mt-0.5">
-                {{ formatMoney(cardToday) }}
-              </p>
-            </div>
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-400">
-              <BanknotesIcon class="h-5 w-5" />
-            </div>
+          <div class="rounded-xl bg-brand-50 dark:bg-brand-950/30 p-3">
+            <p class="text-[10px] text-brand-700 dark:text-brand-300 uppercase tracking-wide font-semibold">Karta</p>
+            <p class="text-base font-extrabold text-brand-700 dark:text-brand-400 mt-0.5 truncate">
+              {{ formatMoney(cardToday) }}
+            </p>
           </div>
         </div>
+
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+          So'nggi kassa harakatlari
+        </h4>
+        <div v-if="!cashRecent.length" class="text-sm text-slate-500 py-4 text-center flex-1">
+          Hali harakat yo'q
+        </div>
+        <ul v-else class="divide-y divide-slate-200 dark:divide-slate-800 flex-1">
+          <li
+            v-for="t in cashRecent.slice(0, 6)"
+            :key="t.id"
+            class="py-2 flex items-start gap-2"
+          >
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                {{ kindLabel(t.kind) }}
+              </p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                {{ t.description || '—' }} · {{ dayjs(t.occurred_at).format("DD.MM HH:mm") }}
+              </p>
+            </div>
+            <span :class="['text-sm font-bold whitespace-nowrap shrink-0', txColor(t.amount)]">
+              {{ txSign(t.amount) }}{{ formatMoney(t.amount.replace('-', '')) }}
+            </span>
+          </li>
+        </ul>
       </div>
 
       <div class="card lg:col-span-2">

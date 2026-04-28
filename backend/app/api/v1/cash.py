@@ -1,11 +1,14 @@
-from datetime import datetime, timezone
+from datetime import datetime, time, timedelta, timezone
 from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from pydantic import BaseModel
+from sqlalchemy import case, func, select
 
+from app.core.config import get_settings
 from app.core.deps import DbDep, require_roles
 from app.models.cash import (
     CashAccount,
@@ -101,6 +104,60 @@ async def get_cash_snapshot(user: StaffUser, db: DbDep) -> CashSnapshot:
     )
     await db.commit()
     return snapshot
+
+
+class CashSummary(BaseModel):
+    balance: Decimal
+    today_in: Decimal
+    today_out: Decimal
+    month_in: Decimal
+    month_out: Decimal
+
+
+@router.get("/summary", response_model=CashSummary)
+async def cash_summary(user: StaffUser, db: DbDep) -> CashSummary:
+    """Today / month money-in / money-out for the dashboard header."""
+    acc = await _get_or_create_account(db, user.company_id)
+
+    tz = ZoneInfo(get_settings().APP_TIMEZONE)
+    now_local = datetime.now(tz=tz)
+    today_local = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
+    month_local = today_local.replace(day=1)
+    today_utc = today_local.astimezone(timezone.utc)
+    month_utc = month_local.astimezone(timezone.utc)
+
+    money_in = func.coalesce(
+        func.sum(case((CashTransaction.amount > 0, CashTransaction.amount), else_=0)), 0
+    )
+    money_out = func.coalesce(
+        func.sum(case((CashTransaction.amount < 0, -CashTransaction.amount), else_=0)), 0
+    )
+
+    today_row = (
+        await db.execute(
+            select(money_in, money_out).where(
+                CashTransaction.company_id == user.company_id,
+                CashTransaction.occurred_at >= today_utc,
+            )
+        )
+    ).one()
+    month_row = (
+        await db.execute(
+            select(money_in, money_out).where(
+                CashTransaction.company_id == user.company_id,
+                CashTransaction.occurred_at >= month_utc,
+            )
+        )
+    ).one()
+
+    await db.commit()
+    return CashSummary(
+        balance=acc.balance,
+        today_in=Decimal(today_row[0] or 0),
+        today_out=Decimal(today_row[1] or 0),
+        month_in=Decimal(month_row[0] or 0),
+        month_out=Decimal(month_row[1] or 0),
+    )
 
 
 @router.get("/transactions", response_model=list[CashTransactionOut])

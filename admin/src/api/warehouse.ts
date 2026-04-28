@@ -87,8 +87,17 @@ export interface InventoryPurchase {
   created_at: string;
 }
 
+export interface CashSummary {
+  balance: string;
+  today_in: string;
+  today_out: string;
+  month_in: string;
+  month_out: string;
+}
+
 export const cashApi = {
   snapshot: () => http.get<CashSnapshot>("/warehouse/cash").then((r) => r.data),
+  summary: () => http.get<CashSummary>("/warehouse/cash/summary").then((r) => r.data),
   transactions: (limit = 100) =>
     http
       .get<CashTransaction[]>("/warehouse/cash/transactions", { params: { limit } })
