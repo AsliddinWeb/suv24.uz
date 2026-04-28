@@ -120,6 +120,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "Haydovchilar" },
       },
       {
+        path: "warehouse",
+        name: "warehouse",
+        component: () => import("@/views/WarehouseView.vue"),
+        meta: { title: "Ombor" },
+      },
+      {
         path: "users",
         name: "users",
         component: () => import("@/views/UsersView.vue"),

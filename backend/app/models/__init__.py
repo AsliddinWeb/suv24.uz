@@ -17,6 +17,7 @@ from app.models.order import (
 from app.models.payment import Payment, PaymentMethod, PaymentStatus, SETTLED_STATUSES
 from app.models.product import Product, ProductPrice
 from app.models.user import User, UserRole
+from app.models.warehouse import StockMovement, WarehouseStock
 
 __all__ = [
     "Base",
@@ -47,4 +48,6 @@ __all__ = [
     "PaymentStatus",
     "SETTLED_STATUSES",
     "DriverBottleBalance",
+    "WarehouseStock",
+    "StockMovement",
 ]
