@@ -250,52 +250,55 @@ async function submitPurchase() {
         <!-- Stock summary -->
         <div
           v-if="p.is_returnable"
-          class="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-3"
+          class="mt-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/60 dark:to-slate-800/30 p-4"
         >
-          <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Ombor balansi</p>
-          <div class="grid grid-cols-2 gap-3 mb-2">
-            <div>
-              <p class="text-[10px] text-slate-500">Omborda</p>
-              <p class="text-sm font-bold text-emerald-600">
-                {{ stockFor(p.id)?.warehouse_full ?? 0 }}
-                <span class="text-slate-400 font-normal">to'la</span>
-                <span class="text-slate-400 mx-1">·</span>
-                <span class="text-slate-700 dark:text-slate-300">{{ stockFor(p.id)?.warehouse_empty ?? 0 }}</span>
-                <span class="text-slate-400 font-normal text-[10px]"> bo'sh</span>
-              </p>
-            </div>
-            <div>
-              <p class="text-[10px] text-slate-500">Haydovchilarda</p>
-              <p class="text-sm font-bold text-brand-600">
-                {{ stockFor(p.id)?.drivers_full ?? 0 }}
-                <span class="text-slate-400 font-normal">to'la</span>
-                <span class="text-slate-400 mx-1">·</span>
-                <span class="text-slate-700 dark:text-slate-300">{{ stockFor(p.id)?.drivers_empty ?? 0 }}</span>
-                <span class="text-slate-400 font-normal text-[10px]"> bo'sh</span>
-              </p>
-            </div>
-          </div>
-          <div class="flex items-baseline justify-between pt-2 border-t border-slate-200 dark:border-slate-700/50">
-            <span class="text-[10px] text-slate-500 uppercase tracking-wide">Sotish uchun mavjud</span>
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              📦 Ombor balansi
+            </p>
             <span
               :class="[
-                'text-base font-extrabold',
+                'text-xs font-bold px-2 py-0.5 rounded-full',
                 (stockFor(p.id)?.available_full ?? 0) > 10
-                  ? 'text-emerald-600'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400'
                   : (stockFor(p.id)?.available_full ?? 0) > 0
-                    ? 'text-amber-600'
-                    : 'text-rose-600',
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400'
+                    : 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400',
               ]"
             >
-              {{ stockFor(p.id)?.available_full ?? 0 }} ta
+              {{ stockFor(p.id)?.available_full ?? 0 }} ta sotish uchun
             </span>
           </div>
+
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="rounded-xl bg-white dark:bg-slate-900/50 p-3 border border-slate-200/50 dark:border-slate-800/50">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Omborda</p>
+              <div class="flex items-baseline gap-1">
+                <span class="text-xl font-extrabold text-emerald-600">{{ stockFor(p.id)?.warehouse_full ?? 0 }}</span>
+                <span class="text-[10px] text-slate-500">to'la</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">
+                + <span class="font-bold text-slate-700 dark:text-slate-300">{{ stockFor(p.id)?.warehouse_empty ?? 0 }}</span> bo'sh
+              </p>
+            </div>
+            <div class="rounded-xl bg-white dark:bg-slate-900/50 p-3 border border-slate-200/50 dark:border-slate-800/50">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Haydovchilarda</p>
+              <div class="flex items-baseline gap-1">
+                <span class="text-xl font-extrabold text-brand-600">{{ stockFor(p.id)?.drivers_full ?? 0 }}</span>
+                <span class="text-[10px] text-slate-500">to'la</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">
+                + <span class="font-bold text-slate-700 dark:text-slate-300">{{ stockFor(p.id)?.drivers_empty ?? 0 }}</span> bo'sh
+              </p>
+            </div>
+          </div>
+
           <button
-            class="btn-primary btn-sm w-full mt-3"
+            class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 text-white font-bold shadow-md shadow-brand-500/25 hover:shadow-lg hover:shadow-brand-500/40 hover:-translate-y-0.5 transition-all"
             @click="openPurchase(p)"
           >
-            <ArchiveBoxArrowDownIcon class="h-4 w-4" />
-            Yangi kirim
+            <ArchiveBoxArrowDownIcon class="h-5 w-5" />
+            Yangi kirim qo'shish
           </button>
         </div>
 
