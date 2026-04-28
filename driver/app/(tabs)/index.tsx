@@ -49,10 +49,15 @@ export default function OrdersListScreen() {
   // Track GPS in foreground; pings backend every 30s while driver is logged in
   const { coords: driverCoords } = useDriverLocation({ enabled: isDriver });
 
+  // For drivers we want fresh data every 15s while the app is foregrounded so
+  // newly-assigned orders appear without manual refresh. Off-shift / non-drivers
+  // refresh only on focus.
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["orders", filter],
     queryFn: () => ordersApi.list({ status: filter ?? undefined, page_size: 50 }),
-    staleTime: 15_000,
+    staleTime: 10_000,
+    refetchInterval: isDriver ? 15_000 : false,
+    refetchIntervalInBackground: false,
   });
 
   useFocusEffect(
@@ -127,6 +132,11 @@ export default function OrdersListScreen() {
     };
   }, [items]);
 
+  // Track ids of *active* orders we've seen. A newly-assigned order shows up
+  // here with status=assigned that wasn't in the previous active set.
+  const seenActiveRef = useRef<Set<string>>(new Set());
+  const [bannerOrders, setBannerOrders] = useState<OrderOut[]>([]);
+
   const newIds = useMemo(() => {
     const current = new Set(items.map((o) => o.id));
     const previous = seenIdsRef.current;
@@ -140,13 +150,51 @@ export default function OrdersListScreen() {
 
   useEffect(() => {
     if (firstLoadRef.current) {
-      if (items.length > 0) firstLoadRef.current = false;
+      if (items.length > 0) {
+        firstLoadRef.current = false;
+        // Seed the active-orders set from the first batch so we don't fire
+        // banners for orders that were already assigned before app open.
+        items.forEach((o) => {
+          if (o.status === "assigned" || o.status === "in_delivery") {
+            seenActiveRef.current.add(o.id);
+          }
+        });
+      }
       return;
     }
-    if (newIds.size > 0) {
+
+    // Detect orders that just became active (newly assigned to this driver)
+    const freshlyActive: OrderOut[] = [];
+    items.forEach((o) => {
+      const isActive = o.status === "assigned" || o.status === "in_delivery";
+      if (isActive && !seenActiveRef.current.has(o.id)) {
+        freshlyActive.push(o);
+        seenActiveRef.current.add(o.id);
+      }
+    });
+
+    if (freshlyActive.length > 0) {
+      // Strong haptic + visual banner
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setTimeout(
+        () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy),
+        180,
+      );
+      setBannerOrders(freshlyActive);
+      // Auto-dismiss after 6s
+      setTimeout(() => setBannerOrders([]), 6000);
     }
-  }, [newIds, items.length]);
+  }, [items]);
+
+  function dismissBanner() {
+    setBannerOrders([]);
+  }
+
+  function openBannerOrder(o: OrderOut) {
+    Haptics.selectionAsync();
+    setBannerOrders([]);
+    router.push(`/orders/${o.id}`);
+  }
 
   function onFilterChange(next: OrderStatus | null) {
     Haptics.selectionAsync();
@@ -165,6 +213,44 @@ export default function OrdersListScreen() {
 
   return (
     <View style={styles.container}>
+      {bannerOrders.length > 0 && (
+        <Animated.View
+          entering={FadeInDown.duration(280).springify().damping(12)}
+          exiting={FadeInDown.duration(200)}
+          style={styles.banner}
+        >
+          <View style={styles.bannerIcon}>
+            <Ionicons name="notifications" size={22} color="#fff" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.bannerTitle}>
+              {bannerOrders.length === 1
+                ? "Yangi buyurtma!"
+                : `${bannerOrders.length} ta yangi buyurtma!`}
+            </Text>
+            <Text style={styles.bannerSub} numberOfLines={1}>
+              {bannerOrders.length === 1
+                ? `#${bannerOrders[0].number} · ${bannerOrders[0].customer?.full_name || ""}`
+                : "Sizga biriktirilgan"}
+            </Text>
+          </View>
+          {bannerOrders.length === 1 ? (
+            <Pressable
+              onPress={() => openBannerOrder(bannerOrders[0])}
+              style={({ pressed }) => [
+                styles.bannerBtn,
+                pressed && { opacity: 0.85 },
+              ]}
+            >
+              <Text style={styles.bannerBtnText}>Ko'rish</Text>
+            </Pressable>
+          ) : null}
+          <Pressable onPress={dismissBanner} style={styles.bannerClose} hitSlop={8}>
+            <Ionicons name="close" size={20} color="#fff" />
+          </Pressable>
+        </Animated.View>
+      )}
+
       <View style={styles.summaryRow}>
         <SummaryPill
           icon="hourglass"
@@ -464,6 +550,48 @@ const makeStyles = (c: ColorsScheme) =>
       backgroundColor: c.slate50,
       borderWidth: 1,
       borderColor: "transparent",
+    },
+    banner: {
+      marginHorizontal: 12,
+      marginTop: 10,
+      marginBottom: 4,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderRadius: 16,
+      backgroundColor: c.brand,
+      shadowColor: c.brand,
+      shadowOpacity: 0.4,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 8,
+    },
+    bannerIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+      backgroundColor: "rgba(255,255,255,0.22)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    bannerTitle: { color: "#fff", fontSize: 14, fontWeight: "800" },
+    bannerSub: { color: "rgba(255,255,255,0.9)", fontSize: 12, marginTop: 1 },
+    bannerBtn: {
+      backgroundColor: "#fff",
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 10,
+    },
+    bannerBtnText: { color: c.brand, fontSize: 13, fontWeight: "800" },
+    bannerClose: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: "rgba(255,255,255,0.18)",
+      alignItems: "center",
+      justifyContent: "center",
     },
     chipActive: { backgroundColor: c.brand, borderColor: c.brand },
     chipText: { fontSize: 13, fontWeight: "600", color: c.textMuted },
