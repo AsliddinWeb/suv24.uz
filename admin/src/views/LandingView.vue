@@ -639,9 +639,9 @@ onMounted(() => {
             Bepul sinashni boshlash
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/></svg>
           </button>
-          <a href="tel:+998901234567" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white/10 text-white font-bold border border-white/20 hover:bg-white/20 transition-colors backdrop-blur">
+          <a href="tel:+998942025511" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white/10 text-white font-bold border border-white/20 hover:bg-white/20 transition-colors backdrop-blur">
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
-            +998 90 123 45 67
+            +998 94 202 55 11
           </a>
         </div>
       </div>
@@ -669,10 +669,10 @@ onMounted(() => {
           <div>
             <h4 class="text-white font-semibold mb-4">Aloqa</h4>
             <ul class="space-y-2 text-sm">
-              <li><a href="tel:+998901234567" class="hover:text-white transition-colors">+998 90 123 45 67</a></li>
-              <li><a href="mailto:info@suv24.uz" class="hover:text-white transition-colors">info@suv24.uz</a></li>
-              <li><a href="https://t.me/suv24_uz" class="hover:text-white transition-colors">@suv24_uz</a></li>
-              <li class="text-slate-500">Toshkent, O'zbekiston</li>
+              <li><a href="tel:+998942025511" class="hover:text-white transition-colors">+998 94 202 55 11</a></li>
+              <li><a href="mailto:asliddinweb@gmail.com" class="hover:text-white transition-colors">asliddinweb@gmail.com</a></li>
+              <li><a href="https://t.me/asliddin_abdujabborov" class="hover:text-white transition-colors">@asliddin_abdujabborov</a></li>
+              <li class="text-slate-500">Qarshi, O'zbekiston</li>
             </ul>
           </div>
         </div>
