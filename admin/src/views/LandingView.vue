@@ -4,7 +4,6 @@ import { useRouter } from "vue-router";
 import DemoRequestDialog from "@/components/DemoRequestDialog.vue";
 
 const router = useRouter();
-const period = ref<"monthly" | "yearly">("monthly");
 const demoOpen = ref(false);
 
 function goLogin() {
@@ -396,29 +395,10 @@ onMounted(() => {
             Arzon narx,
             <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-indigo-600 to-sky-500">kuchli tizim</span>
           </h2>
-          <p class="mt-4 text-lg text-slate-600">Kunlik 1-2 mijoz — oylik to'lovni qoplaydi.</p>
-        </div>
-
-        <div class="mt-10 flex justify-center">
-          <div class="inline-flex items-center gap-1 rounded-full bg-slate-100 p-1 border border-slate-200">
-            <button
-              @click="period = 'monthly'"
-              :class="[
-                'px-5 py-2 rounded-full text-sm font-semibold transition-all',
-                period === 'monthly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500',
-              ]"
-            >Oylik</button>
-            <button
-              @click="period = 'yearly'"
-              :class="[
-                'px-5 py-2 rounded-full text-sm font-semibold transition-all',
-                period === 'yearly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500',
-              ]"
-            >
-              Yillik
-              <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">-17%</span>
-            </button>
-          </div>
+          <p class="mt-4 text-lg text-slate-600">
+            Tariflar biznesingiz hajmiga moslashtiriladi.
+            Demo ko'rib, sizga mos taklifni shaxsiy aloqa orqali olasiz.
+          </p>
         </div>
 
         <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -432,9 +412,8 @@ onMounted(() => {
             </div>
             <p class="mt-3 text-sm text-slate-600">Kichik biznes — 1 operator, 3 haydovchi.</p>
             <div class="mt-6">
-              <span class="text-5xl font-extrabold tracking-tight">{{ period === 'monthly' ? '99 000' : '990 000' }}</span>
-              <span class="text-slate-500 ml-1 text-sm">so'm/{{ period === 'monthly' ? 'oy' : 'yil' }}</span>
-              <p v-if="period === 'yearly'" class="text-xs text-emerald-600 font-semibold mt-1">2 oy tekinga · ~200k tejash</p>
+              <p class="text-3xl font-extrabold tracking-tight text-slate-900">Aloqaga chiqing</p>
+              <p class="text-sm text-slate-500 mt-1">Shaxsiy taklif</p>
             </div>
             <ul class="mt-6 space-y-3 text-sm text-slate-700 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong>3 gacha haydovchi</strong></li>
@@ -459,9 +438,8 @@ onMounted(() => {
             </div>
             <p class="mt-3 text-sm text-brand-50">O'rta biznes — cheksiz haydovchi va mijoz.</p>
             <div class="mt-6 text-white">
-              <span class="text-5xl font-extrabold tracking-tight">{{ period === 'monthly' ? '199 000' : '1 990 000' }}</span>
-              <span class="text-brand-100 ml-1 text-sm">so'm/{{ period === 'monthly' ? 'oy' : 'yil' }}</span>
-              <p v-if="period === 'yearly'" class="text-xs text-amber-300 font-semibold mt-1">2 oy tekinga · ~400k tejash</p>
+              <p class="text-3xl font-extrabold tracking-tight">Aloqaga chiqing</p>
+              <p class="text-sm text-brand-100 mt-1">Eng ko'p tanlanadigan tarif</p>
             </div>
             <ul class="mt-6 space-y-3 text-sm text-brand-50 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong class="text-white">Cheksiz haydovchi · mijoz · buyurtma</strong></li>
@@ -486,9 +464,8 @@ onMounted(() => {
             </div>
             <p class="mt-3 text-sm text-slate-400">Tarmoqlar va yirik kompaniyalar.</p>
             <div class="mt-6">
-              <span class="text-5xl font-extrabold tracking-tight">{{ period === 'monthly' ? '399 000' : '3 990 000' }}</span>
-              <span class="text-slate-400 ml-1 text-sm">so'm/{{ period === 'monthly' ? 'oy' : 'yil' }}</span>
-              <p v-if="period === 'yearly'" class="text-xs text-emerald-400 font-semibold mt-1">2 oy tekinga · ~800k tejash</p>
+              <p class="text-3xl font-extrabold tracking-tight text-white">Aloqaga chiqing</p>
+              <p class="text-sm text-slate-400 mt-1">Shaxsiy menejer bilan</p>
             </div>
             <ul class="mt-6 space-y-3 text-sm text-slate-300 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong class="text-white">Biznes'dagi hammasi +</strong></li>
@@ -528,8 +505,8 @@ onMounted(() => {
           <!-- Biznes Lifetime -->
           <div class="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 p-8 text-left flex flex-col hover:bg-white/10 transition-colors">
             <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Biznes Lifetime</p>
-            <p class="mt-2 text-4xl font-extrabold">7 990 000 <span class="text-base text-slate-400 font-normal">so'm</span></p>
-            <p class="mt-1 text-xs text-emerald-400 font-semibold">~40 oyda o'zini oqlaydi (199k/oy'ga nisbatan)</p>
+            <p class="mt-2 text-3xl font-extrabold">Aloqaga chiqing</p>
+            <p class="mt-1 text-xs text-emerald-400 font-semibold">Bir martalik to'lov · Maxsus taklif</p>
             <p class="mt-4 text-sm text-slate-300">O'rta biznes — cheksiz haydovchi va mijoz.</p>
             <ul class="mt-6 space-y-2.5 text-sm text-slate-200 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong>Cheksiz haydovchi · mijoz · buyurtma</strong></li>
@@ -549,8 +526,8 @@ onMounted(() => {
           <div class="relative rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 p-8 text-left text-slate-900 shadow-2xl shadow-amber-500/40 flex flex-col lg:scale-105">
             <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-amber-400 px-4 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider">🔥 Eng foydali</div>
             <p class="text-xs font-bold uppercase tracking-wider">Premium Lifetime</p>
-            <p class="mt-2 text-4xl font-extrabold">12 990 000 <span class="text-base font-semibold">so'm</span></p>
-            <p class="mt-1 text-xs font-bold">~33 oyda o'zini oqlaydi (399k/oy'ga nisbatan)</p>
+            <p class="mt-2 text-3xl font-extrabold">Aloqaga chiqing</p>
+            <p class="mt-1 text-xs font-bold">Bir martalik to'lov · Maxsus taklif</p>
             <p class="mt-4 text-sm font-medium">Tarmoqlar va ko'p filialli kompaniyalar uchun.</p>
             <ul class="mt-6 space-y-2.5 text-sm text-slate-900 flex-1">
               <li class="flex items-start gap-2"><svg class="h-5 w-5 text-slate-900 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><strong>Biznes'dagi hamma narsa +</strong></li>
