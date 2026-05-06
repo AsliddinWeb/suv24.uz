@@ -302,8 +302,10 @@ async def record_purchase(
             detail="Mahsulot qaytariladigan emas",
         )
 
-    qty_total = payload.full_count + payload.empty_count
-    total_cost = (payload.unit_cost * qty_total).quantize(Decimal("0.01"))
+    total_cost = (
+        payload.unit_cost_full * payload.full_count
+        + payload.unit_cost_empty * payload.empty_count
+    ).quantize(Decimal("0.01"))
     occurred_at = payload.occurred_at or datetime.now(tz=timezone.utc)
 
     purchase = InventoryPurchase(
@@ -311,7 +313,8 @@ async def record_purchase(
         product_id=product.id,
         full_count=payload.full_count,
         empty_count=payload.empty_count,
-        unit_cost=payload.unit_cost,
+        unit_cost_full=payload.unit_cost_full,
+        unit_cost_empty=payload.unit_cost_empty,
         total_cost=total_cost,
         supplier=payload.supplier,
         note=payload.note,

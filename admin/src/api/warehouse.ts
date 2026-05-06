@@ -79,7 +79,8 @@ export interface InventoryPurchase {
   volume_liters: number | null;
   full_count: number;
   empty_count: number;
-  unit_cost: string;
+  unit_cost_full: string;
+  unit_cost_empty: string;
   total_cost: string;
   supplier: string | null;
   note: string | null;
@@ -121,7 +122,8 @@ export const purchasesApi = {
     product_id: UUID;
     full_count?: number;
     empty_count?: number;
-    unit_cost: string | number;
+    unit_cost_full?: string | number;
+    unit_cost_empty?: string | number;
     supplier?: string | null;
     note?: string | null;
     occurred_at?: string | null;

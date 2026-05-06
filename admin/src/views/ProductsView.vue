@@ -51,7 +51,8 @@ const purchaseFor = ref<ProductOut | null>(null);
 const purchaseForm = reactive({
   full_count: "0",
   empty_count: "0",
-  unit_cost: "0",
+  unit_cost_full: "0",
+  unit_cost_empty: "0",
   supplier: "",
   note: "",
 });
@@ -59,8 +60,9 @@ const purchaseForm = reactive({
 const purchaseTotal = computed(() => {
   const fc = parseInt(purchaseForm.full_count || "0", 10) || 0;
   const ec = parseInt(purchaseForm.empty_count || "0", 10) || 0;
-  const uc = parseFloat(purchaseForm.unit_cost || "0") || 0;
-  return (fc + ec) * uc;
+  const ucf = parseFloat(purchaseForm.unit_cost_full || "0") || 0;
+  const uce = parseFloat(purchaseForm.unit_cost_empty || "0") || 0;
+  return fc * ucf + ec * uce;
 });
 
 async function load() {
@@ -137,7 +139,8 @@ function openPurchase(p: ProductOut) {
   purchaseFor.value = p;
   purchaseForm.full_count = "0";
   purchaseForm.empty_count = "0";
-  purchaseForm.unit_cost = "0";
+  purchaseForm.unit_cost_full = "0";
+  purchaseForm.unit_cost_empty = "0";
   purchaseForm.supplier = "";
   purchaseForm.note = "";
   purchaseOpen.value = true;
@@ -155,8 +158,9 @@ async function submitPurchase() {
     toast.warning("Soni 0 bo'lmasin");
     return;
   }
-  const uc = parseFloat(purchaseForm.unit_cost || "0") || 0;
-  if (uc < 0) {
+  const ucf = parseFloat(purchaseForm.unit_cost_full || "0") || 0;
+  const uce = parseFloat(purchaseForm.unit_cost_empty || "0") || 0;
+  if (ucf < 0 || uce < 0) {
     toast.warning("Birlik narxi manfiy bo'lmasin");
     return;
   }
@@ -165,7 +169,8 @@ async function submitPurchase() {
       product_id: purchaseFor.value.id,
       full_count: fc,
       empty_count: ec,
-      unit_cost: uc.toString(),
+      unit_cost_full: ucf.toString(),
+      unit_cost_empty: uce.toString(),
       supplier: purchaseForm.supplier || null,
       note: purchaseForm.note || null,
     });
@@ -397,11 +402,30 @@ async function submitPurchase() {
             <input v-model="purchaseForm.empty_count" type="number" min="0" class="input" />
           </div>
         </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-            Bir dona narxi (so'm)
-          </label>
-          <input v-model="purchaseForm.unit_cost" type="number" min="0" class="input" placeholder="15000" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              To'la idish narxi (so'm)
+            </label>
+            <input v-model="purchaseForm.unit_cost_full" type="number" min="0" class="input" placeholder="15000" />
+            <p class="mt-1 text-[10px] text-slate-400">Suv + idish bilan</p>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Bo'sh idish narxi (so'm)
+            </label>
+            <input
+              v-model="purchaseForm.unit_cost_empty"
+              type="number"
+              min="0"
+              class="input"
+              placeholder="0"
+              :disabled="(parseInt(purchaseForm.empty_count) || 0) === 0"
+            />
+            <p class="mt-1 text-[10px] text-slate-400">
+              {{ (parseInt(purchaseForm.empty_count) || 0) === 0 ? 'Bo\'sh idish yo\'q' : 'Faqat idish (suvsiz)' }}
+            </p>
+          </div>
         </div>
         <div class="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-3 flex items-baseline justify-between">
           <span class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Jami xarajat</span>

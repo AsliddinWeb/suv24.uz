@@ -177,7 +177,8 @@ const purchaseForm = reactive<{
   product_name: string;
   full_count: string;
   empty_count: string;
-  unit_cost: string;
+  unit_cost_full: string;
+  unit_cost_empty: string;
   supplier: string;
   note: string;
 }>({
@@ -185,7 +186,8 @@ const purchaseForm = reactive<{
   product_name: "",
   full_count: "0",
   empty_count: "0",
-  unit_cost: "0",
+  unit_cost_full: "0",
+  unit_cost_empty: "0",
   supplier: "",
   note: "",
 });
@@ -200,8 +202,9 @@ const productOptions = computed(() =>
 const purchaseTotal = computed(() => {
   const fc = parseInt(purchaseForm.full_count || "0", 10) || 0;
   const ec = parseInt(purchaseForm.empty_count || "0", 10) || 0;
-  const uc = parseFloat(purchaseForm.unit_cost || "0") || 0;
-  return (fc + ec) * uc;
+  const ucf = parseFloat(purchaseForm.unit_cost_full || "0") || 0;
+  const uce = parseFloat(purchaseForm.unit_cost_empty || "0") || 0;
+  return fc * ucf + ec * uce;
 });
 
 function openPurchase(s?: WarehouseStock) {
@@ -209,7 +212,8 @@ function openPurchase(s?: WarehouseStock) {
   purchaseForm.product_name = s ? `${s.product_name} · ${s.volume_liters}L` : "";
   purchaseForm.full_count = "0";
   purchaseForm.empty_count = "0";
-  purchaseForm.unit_cost = "0";
+  purchaseForm.unit_cost_full = "0";
+  purchaseForm.unit_cost_empty = "0";
   purchaseForm.supplier = "";
   purchaseForm.note = "";
   purchaseOpen.value = true;
@@ -230,8 +234,9 @@ async function submitPurchase() {
     toast.warning("Soni 0 bo'lmasin");
     return;
   }
-  const uc = parseFloat(purchaseForm.unit_cost || "0") || 0;
-  if (uc < 0) {
+  const ucf = parseFloat(purchaseForm.unit_cost_full || "0") || 0;
+  const uce = parseFloat(purchaseForm.unit_cost_empty || "0") || 0;
+  if (ucf < 0 || uce < 0) {
     toast.warning("Birlik narxi manfiy bo'lmasin");
     return;
   }
@@ -240,7 +245,8 @@ async function submitPurchase() {
       product_id: purchaseForm.product_id,
       full_count: fc,
       empty_count: ec,
-      unit_cost: uc.toString(),
+      unit_cost_full: ucf.toString(),
+      unit_cost_empty: uce.toString(),
       supplier: purchaseForm.supplier || null,
       note: purchaseForm.note || null,
     });
@@ -646,7 +652,8 @@ const totalDriversEmpty = computed(() => summary.value.reduce((sum, s) => sum + 
             <th>Mahsulot</th>
             <th class="text-center">To'la</th>
             <th class="text-center">Bo'sh</th>
-            <th class="text-right">Birlik narx</th>
+            <th class="text-right">To'la narxi</th>
+            <th class="text-right">Bo'sh narxi</th>
             <th class="text-right">Jami</th>
             <th>Yetkazib beruvchi</th>
           </tr>
@@ -659,7 +666,8 @@ const totalDriversEmpty = computed(() => summary.value.reduce((sum, s) => sum + 
             <td class="font-medium">{{ p.product_name }} <span class="text-xs text-slate-500">· {{ p.volume_liters }}L</span></td>
             <td class="text-center text-emerald-600 font-bold">{{ p.full_count || '—' }}</td>
             <td class="text-center text-slate-700 dark:text-slate-200">{{ p.empty_count || '—' }}</td>
-            <td class="text-right text-sm">{{ formatMoney(p.unit_cost) }}</td>
+            <td class="text-right text-sm">{{ p.full_count > 0 ? formatMoney(p.unit_cost_full) : '—' }}</td>
+            <td class="text-right text-sm">{{ p.empty_count > 0 ? formatMoney(p.unit_cost_empty) : '—' }}</td>
             <td class="text-right font-bold text-rose-600">−{{ formatMoney(p.total_cost) }}</td>
             <td class="text-sm text-slate-600 dark:text-slate-400">{{ p.supplier || '—' }}</td>
           </tr>
@@ -836,11 +844,30 @@ const totalDriversEmpty = computed(() => summary.value.reduce((sum, s) => sum + 
             <input v-model="purchaseForm.empty_count" type="number" min="0" class="input" />
           </div>
         </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-            Bir dona narxi (so'm)
-          </label>
-          <input v-model="purchaseForm.unit_cost" type="number" min="0" class="input" placeholder="15000" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              To'la idish narxi (so'm)
+            </label>
+            <input v-model="purchaseForm.unit_cost_full" type="number" min="0" class="input" placeholder="15000" />
+            <p class="mt-1 text-[10px] text-slate-400">Suv + idish bilan</p>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Bo'sh idish narxi (so'm)
+            </label>
+            <input
+              v-model="purchaseForm.unit_cost_empty"
+              type="number"
+              min="0"
+              class="input"
+              placeholder="0"
+              :disabled="(parseInt(purchaseForm.empty_count) || 0) === 0"
+            />
+            <p class="mt-1 text-[10px] text-slate-400">
+              {{ (parseInt(purchaseForm.empty_count) || 0) === 0 ? 'Bo\'sh idish yo\'q' : 'Faqat idish (suvsiz)' }}
+            </p>
+          </div>
         </div>
         <div class="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-3 flex items-baseline justify-between">
           <span class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Jami xarajat</span>

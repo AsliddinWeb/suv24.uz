@@ -39,7 +39,8 @@ class PurchaseIn(BaseModel):
     product_id: UUID
     full_count: int = Field(default=0, ge=0)
     empty_count: int = Field(default=0, ge=0)
-    unit_cost: Decimal = Field(ge=0)
+    unit_cost_full: Decimal = Field(default=Decimal("0"), ge=0)
+    unit_cost_empty: Decimal = Field(default=Decimal("0"), ge=0)
     supplier: str | None = Field(default=None, max_length=255)
     note: str | None = Field(default=None, max_length=512)
     occurred_at: datetime | None = None
@@ -54,7 +55,8 @@ class PurchaseOut(BaseModel):
     volume_liters: int | None = None
     full_count: int
     empty_count: int
-    unit_cost: Decimal
+    unit_cost_full: Decimal
+    unit_cost_empty: Decimal
     total_cost: Decimal
     supplier: str | None = None
     note: str | None = None
