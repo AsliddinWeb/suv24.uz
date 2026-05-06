@@ -25,7 +25,11 @@
     "extra": {
       "router": {
         "origin": false
+      },
+      "eas": {
+        "projectId": "9f486a99-6f6a-4689-b3cb-ca54c65ed2e2"
       }
-    }
+    },
+    "owner": "asliddinweb"
   }
 }
