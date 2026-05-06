@@ -35,14 +35,20 @@ services:
     build:
       context: ./admin
       dockerfile: Dockerfile
+    image: !reset null
     container_name: wdms_admin
     restart: always
+    # Reset all dev-only settings — production serves a static SPA via internal nginx.
+    command: !reset null
+    working_dir: !reset null
+    environment: !reset null
+    volumes: !reset []
     depends_on:
       backend:
         condition: service_healthy
     # Host nginx forwards public traffic to this port.
     # If 8020 is taken, set ADMIN_HOST_PORT in .env.
-    ports:
+    ports: !override
       - "127.0.0.1:${ADMIN_HOST_PORT:-8020}:80"
 
 volumes:

@@ -241,6 +241,76 @@ class OrderService:
         await self.db.refresh(order)
         return order
 
+    async def _check_driver_full_stock_for_assign(
+        self, order: Order, driver: Driver
+    ) -> None:
+        """Block assignment if driver's full-bottle balance can't cover this order
+        plus their other in-flight orders. Saves driver from a 422 at delivery time
+        and forces dispatcher to load bottles via warehouse → driver transfer first.
+        """
+        # Required full bottles per returnable product in THIS order
+        needed: dict[UUID, int] = {}
+        for it in order.items:
+            product = await self.products.get(order.company_id, it.product_id)
+            if product is None or not product.is_returnable:
+                continue
+            needed[it.product_id] = needed.get(it.product_id, 0) + it.quantity
+        if not needed:
+            return
+
+        # Already-committed bottles in driver's other ASSIGNED/IN_DELIVERY orders
+        committed_rows = (
+            await self.db.execute(
+                select(OrderItem.product_id, func.coalesce(func.sum(OrderItem.quantity), 0))
+                .join(Order, Order.id == OrderItem.order_id)
+                .where(
+                    Order.driver_id == driver.id,
+                    Order.id != order.id,
+                    Order.status.in_(
+                        [OrderStatus.ASSIGNED, OrderStatus.IN_DELIVERY]
+                    ),
+                    Order.deleted_at.is_(None),
+                    OrderItem.product_id.in_(list(needed.keys())),
+                )
+                .group_by(OrderItem.product_id)
+            )
+        ).all()
+        committed = {pid: int(qty or 0) for pid, qty in committed_rows}
+
+        shortfalls: list[str] = []
+        for pid, need in needed.items():
+            balance = await self.db.execute(
+                select(DriverBottleBalance.full_count).where(
+                    DriverBottleBalance.driver_id == driver.id,
+                    DriverBottleBalance.product_id == pid,
+                )
+            )
+            have = int(balance.scalar() or 0)
+            other = committed.get(pid, 0)
+            available = have - other
+            if available < need:
+                product = await self.products.get(order.company_id, pid)
+                name = product.name if product else str(pid)
+                short = need - available
+                msg = (
+                    f"{name}: kerak {need}, "
+                    f"haydovchida {have}"
+                )
+                if other:
+                    msg += f" (boshqa buyurtmalarga band: {other})"
+                msg += f" — yetishmaydi: {short}"
+                shortfalls.append(msg)
+
+        if shortfalls:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    "Haydovchida yetarli to'la idish yo'q. "
+                    "Avval ombordan haydovchiga yuklang.\n"
+                    + "\n".join(shortfalls)
+                ),
+            )
+
     async def assign_driver(
         self,
         order: Order,
@@ -256,6 +326,9 @@ class OrderService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Cannot assign from status {order.status.value}",
             )
+
+        await self._check_driver_full_stock_for_assign(order, driver)
+
         previous_driver = order.driver_id
         order.driver_id = driver.id
         if order.status == OrderStatus.PENDING:
