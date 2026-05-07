@@ -138,7 +138,7 @@ const timelineStyle: Record<string, { bg: string; text: string; dotBg: string; i
 // ---- Actions ----
 async function onAssign() {
   if (!order.value || !selectedDriver.value) return;
-  await ordersApi.assign(order.value.id, selectedDriver.value);
+  await ordersApi.assign(order.value.id, selectedDriver.value, true);
   assignOpen.value = false;
   selectedDriver.value = null;
   await load();

@@ -220,7 +220,12 @@ async def assign_driver(
     driver = await service.drivers.get(user.company_id, payload.driver_id)
     if driver is None:
         raise HTTPException(status_code=404, detail="Driver not found")
-    order = await service.assign_driver(order, driver, actor_user_id=user.id)
+    order = await service.assign_driver(
+        order,
+        driver,
+        actor_user_id=user.id,
+        auto_load=payload.auto_load_from_warehouse,
+    )
     await db.commit()
     await db.refresh(order)
     return await _detail_out(db, order)

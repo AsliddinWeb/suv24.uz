@@ -181,7 +181,7 @@ function openAssign(o: OrderOut) {
 
 async function submitAssign() {
   if (!assignOrder.value || !assignDriverId.value) return;
-  await ordersApi.assign(assignOrder.value.id, assignDriverId.value);
+  await ordersApi.assign(assignOrder.value.id, assignDriverId.value, true);
   assignOpen.value = false;
   toast.success("Biriktirildi");
   load();

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID
 
@@ -18,7 +19,7 @@ from app.models.order import (
     OrderStatusLog,
 )
 from app.models.product import Product
-from app.models.warehouse import WarehouseStock
+from app.models.warehouse import StockMovement, WarehouseStock
 from app.repositories.address import AddressRepository
 from app.repositories.customer import CustomerRepository
 from app.repositories.driver import DriverRepository
@@ -311,11 +312,112 @@ class OrderService:
                 ),
             )
 
+    async def _auto_load_full_for_assign(
+        self,
+        order: Order,
+        driver: Driver,
+        actor_user_id: UUID,
+    ) -> None:
+        """Move full bottles from warehouse → driver to satisfy this assignment.
+        Same shortfall math as the check (this order + driver's other in-flight),
+        and atomic with the assign — rolled back if the warehouse is also short.
+        """
+        needed: dict[UUID, int] = {}
+        for it in order.items:
+            product = await self.products.get(order.company_id, it.product_id)
+            if product is None or not product.is_returnable:
+                continue
+            needed[it.product_id] = needed.get(it.product_id, 0) + it.quantity
+        if not needed:
+            return
+
+        committed_rows = (
+            await self.db.execute(
+                select(OrderItem.product_id, func.coalesce(func.sum(OrderItem.quantity), 0))
+                .join(Order, Order.id == OrderItem.order_id)
+                .where(
+                    Order.driver_id == driver.id,
+                    Order.id != order.id,
+                    Order.status.in_(
+                        [OrderStatus.ASSIGNED, OrderStatus.IN_DELIVERY]
+                    ),
+                    Order.deleted_at.is_(None),
+                    OrderItem.product_id.in_(list(needed.keys())),
+                )
+                .group_by(OrderItem.product_id)
+            )
+        ).all()
+        committed = {pid: int(qty or 0) for pid, qty in committed_rows}
+
+        for pid, need in needed.items():
+            balance = (
+                await self.db.execute(
+                    select(DriverBottleBalance).where(
+                        DriverBottleBalance.driver_id == driver.id,
+                        DriverBottleBalance.product_id == pid,
+                    )
+                )
+            ).scalar_one_or_none()
+            have = int(balance.full_count) if balance else 0
+            other = committed.get(pid, 0)
+            short = need - (have - other)
+            if short <= 0:
+                continue
+
+            stock = (
+                await self.db.execute(
+                    select(WarehouseStock).where(
+                        WarehouseStock.company_id == order.company_id,
+                        WarehouseStock.product_id == pid,
+                    )
+                )
+            ).scalar_one_or_none()
+            wh_full = int(stock.full_count) if stock else 0
+            if wh_full < short:
+                product = await self.products.get(order.company_id, pid)
+                name = product.name if product else str(pid)
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=(
+                        f"Omborda ham yetarli emas: {name} — "
+                        f"yetishmaydi {short}, omborda {wh_full}. "
+                        f"Avval ombor kirimini qiling."
+                    ),
+                )
+
+            stock.full_count -= short
+            if balance is None:
+                balance = DriverBottleBalance(
+                    driver_id=driver.id,
+                    product_id=pid,
+                    full_count=0,
+                    empty_count=0,
+                )
+                self.db.add(balance)
+                await self.db.flush()
+            balance.full_count += short
+
+            self.db.add(
+                StockMovement(
+                    company_id=order.company_id,
+                    product_id=pid,
+                    kind="load_driver",
+                    full_delta=-short,
+                    empty_delta=0,
+                    driver_id=driver.id,
+                    reason=f"Auto-load for order #{order.number}",
+                    actor_user_id=actor_user_id,
+                    occurred_at=datetime.now(tz=timezone.utc),
+                )
+            )
+        await self.db.flush()
+
     async def assign_driver(
         self,
         order: Order,
         driver: Driver,
         actor_user_id: UUID,
+        auto_load: bool = False,
     ) -> Order:
         if not driver.is_active:
             raise HTTPException(status_code=400, detail="Driver is not active")
@@ -326,6 +428,9 @@ class OrderService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Cannot assign from status {order.status.value}",
             )
+
+        if auto_load:
+            await self._auto_load_full_for_assign(order, driver, actor_user_id)
 
         await self._check_driver_full_stock_for_assign(order, driver)
 

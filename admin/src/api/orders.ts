@@ -32,8 +32,19 @@ export const ordersApi = {
   update: (id: UUID, body: { delivery_window_start?: string; delivery_window_end?: string; notes?: string }) =>
     http.patch<OrderDetailOut>(`/orders/${id}`, body).then((r) => r.data),
 
-  assign: (id: UUID, driver_id: UUID) =>
-    http.post<OrderDetailOut>(`/orders/${id}/assign`, { driver_id }).then((r) => r.data),
+  assign: (
+    id: UUID,
+    driver_id: UUID,
+    auto_load_from_warehouse = false,
+    opts: { skipErrorToast?: boolean } = {},
+  ) =>
+    http
+      .post<OrderDetailOut>(
+        `/orders/${id}/assign`,
+        { driver_id, auto_load_from_warehouse },
+        { skipErrorToast: opts.skipErrorToast } as any,
+      )
+      .then((r) => r.data),
 
   unassign: (id: UUID) =>
     http.post<OrderDetailOut>(`/orders/${id}/unassign`).then((r) => r.data),

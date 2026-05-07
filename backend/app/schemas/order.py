@@ -39,6 +39,7 @@ class OrderUpdate(BaseModel):
 
 class AssignDriverRequest(BaseModel):
     driver_id: UUID
+    auto_load_from_warehouse: bool = False
 
 
 class ReasonRequest(BaseModel):

@@ -64,7 +64,10 @@ async function doRefresh(): Promise<string | null> {
 http.interceptors.response.use(
   (r) => r,
   async (error: AxiosError<{ detail?: unknown }>) => {
-    const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const original = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+      skipErrorToast?: boolean;
+    };
     const status = error.response?.status;
     if (status === 401 && !original._retry && !original.url?.includes("/auth/")) {
       original._retry = true;
@@ -81,14 +84,16 @@ http.interceptors.response.use(
         window.location.href = "/login";
       }
     } else if (status && status >= 400 && status !== 401) {
-      const detail = error.response?.data?.detail;
-      const message =
-        typeof detail === "string"
-          ? detail
-          : Array.isArray(detail)
-            ? detail.map((d: any) => d.msg || JSON.stringify(d)).join("; ")
-            : `Xatolik: ${status}`;
-      toast.error(message);
+      if (!original.skipErrorToast) {
+        const detail = error.response?.data?.detail;
+        const message =
+          typeof detail === "string"
+            ? detail
+            : Array.isArray(detail)
+              ? detail.map((d: any) => d.msg || JSON.stringify(d)).join("; ")
+              : `Xatolik: ${status}`;
+        toast.error(message);
+      }
     }
     return Promise.reject(error);
   },
