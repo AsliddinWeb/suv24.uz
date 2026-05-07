@@ -1,22 +1,28 @@
 {
   "expo": {
-    "name": "Suv24 Haydovchi",
+    "name": "Suv24 Go",
     "slug": "buloq-driver",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "orientation": "portrait",
-    "scheme": "buloqdriver",
+    "scheme": "suv24go",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "splash": {
-      "backgroundColor": "#2563eb",
-      "resizeMode": "contain"
+      "image": "./assets/splash.png",
+      "backgroundColor": "#3b82f6",
+      "resizeMode": "cover"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "uz.buloq.driver"
     },
     "android": {
-      "package": "uz.buloq.driver"
+      "package": "uz.buloq.driver",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#3b82f6"
+      }
     },
     "plugins": [
       "expo-router",
